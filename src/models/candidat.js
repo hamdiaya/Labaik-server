@@ -5,12 +5,11 @@ const user={
   createCandidat:  async (firstName,lastName,email,password)=> {
     try {
         // Insert user data into the 'users' table
-        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false,dossierComplet:false}]);
+        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false}]);
 
         if (error) {
             return error;
         }
-
         return data;
     } catch (error) {
         console.error('Error creating user:', error);
@@ -121,7 +120,47 @@ const user={
         console.error('Error verifying confirmation code:', error.message);
         return false;
       }
-    }
+    },
+    
+    setCandidatInfo:async(email,firstName_fr,lastName_fr,sexe,date_of_birth,numéro_national,father_name_arabe,mother_first_name_arabe,mother_last_name_arabe,wilaya_résidence,commune_résidence)=>{
+      try {
+        // Check if the user exists
+        const userData = await user.findUserByemail(email);
+        if (!userData||!userData.email) {
+          console.error('User not found');
+          return false;
+        }
+    
+        // Update the row with the provided values
+        const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .update({
+            firstName_fr: firstName_fr,
+            lastName_fr: lastName_fr,
+            sexe: sexe,
+            date_of_birth: date_of_birth,
+            numéro_national: numéro_national,
+            father_name_arabe: father_name_arabe,
+            mother_first_name_arabe: mother_first_name_arabe,
+            mother_last_name_arabe: mother_last_name_arabe,
+            wilaya_résidence: wilaya_résidence,
+            commune_résidence: commune_résidence,
+            infoSetted:true,
+          })
+          .eq('email', email);
+    
+        if (error) {
+          console.error('Error updating candidat info:', error.message);
+          return false;
+        }
+    
+        return true; // Candidat info updated successfully
+      } catch (error) {
+        console.error('Error updating candidat info:', error.message);
+        return false;
+      }
+    },
+    
     
     
 
