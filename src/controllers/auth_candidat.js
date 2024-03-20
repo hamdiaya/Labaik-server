@@ -10,6 +10,7 @@ const auth_controller={
           const hashedPassword=await bcrypt.hash(password,10);
           const user = await candidat.createCandidat(firstName,lastName,email,hashedPassword);
           if(user!=null){
+            console.log(user);
             res.status(404).json('account already exist');
           }
           res.status(201).json('account created');
@@ -57,11 +58,17 @@ login: async (req, res) => {
       // Check if the user with the given email exists
       const existingUser = await user.findUserByemail(email)
 
-      if (!existingUser) {
+      if (!existingUser||!existingUser.email) {
           // If user doesn't exist, return a 404 error
           return res.status(404).json({ error: 'User not found' });
       }
+      console.log(existingUser.password);
+      const passwordMatch = await bcrypt.compare(password, existingUser.password);
 
+      if (!passwordMatch) {
+          // If passwords don't match, return a 401 error
+          return res.status(401).json({ error: 'Incorrect password' });
+      }
       // Check if the user is verified
       if (!existingUser.userVerified) {
           return res.status(403).json({ error: 'User not verified' });
@@ -78,12 +85,7 @@ login: async (req, res) => {
       }
 
       // Compare the provided password with the hashed password
-      const passwordMatch = await bcrypt.compare(password, existingUser.password);
-
-      if (!passwordMatch) {
-          // If passwords don't match, return a 401 error
-          return res.status(401).json({ error: 'Incorrect password' });
-      }
+      
 
       // If everything is okay, return success
       res.status(200).json({ message: 'Login successful' });

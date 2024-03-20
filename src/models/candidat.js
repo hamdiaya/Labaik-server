@@ -5,7 +5,7 @@ const user={
   createCandidat:  async (firstName,lastName,email,password)=> {
     try {
         // Insert user data into the 'users' table
-        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false,dossierComplet:false}]);
+        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false}]);
 
         if (error) {
             return error;
