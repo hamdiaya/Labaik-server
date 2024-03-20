@@ -5,12 +5,11 @@ const user={
   createCandidat:  async (firstName,lastName,email,password)=> {
     try {
         // Insert user data into the 'users' table
-        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false,}]);
+        const { data, error } = await supabase.from('candidats_duplicate').insert([{firstName_ar: firstName,lastName_ar:lastName, email: email,password:password,current:true,userVerified:false}]);
 
         if (error) {
             return error;
         }
-
         return data;
     } catch (error) {
         console.error('Error creating user:', error);
@@ -20,15 +19,15 @@ const user={
    
     findUserByemail:async (email)=> {
         try {
-            // Query the "candidats" table to find the user by phone number
+            // Query the "candidats" table to find the user by email
             const { data, error } = await supabase
                 .from('candidats_duplicate')
                 .select('*')
                 .eq('email', email)
-                .single(); // Assuming the phone number is unique
+                .single(); // Assuming the email is unique
     
             if (error) {
-                return error;
+                throw error;
             }
     
             if (!data) {
@@ -38,7 +37,7 @@ const user={
   
             return data; // Return the user data
         } catch (error) {
-            console.error('Error finding user by phone number:', error.message);
+            console.error('Error finding user by email:', error.message);
             return error;
         }
     },
@@ -162,7 +161,17 @@ const user={
       }
     },
     
-      
+    
+    
+
+
+
+
+
+
+
+
+    
 }
 
   module.exports=user;
