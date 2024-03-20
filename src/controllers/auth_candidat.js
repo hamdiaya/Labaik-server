@@ -2,6 +2,14 @@ const user = require('../models/candidat');
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
 const moment = require('moment');
+const jwt=require('jsonwebtoken');
+const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
+const cookieOptions = {
+  httpOnly: true,
+  maxAge: 3000*30*24*60*60, // month in milliseconds
+  secure: true, // Set to true in production if using HTTPS
+  sameSite: 'None', 
+};
 const auth_controller={
 
     signUp:async(req, res) =>{
@@ -91,12 +99,12 @@ login: async (req, res) => {
           return res.status(401).json({ error: 'Incorrect password' });
       }
       // Check if the user is verified
-      if (!existingUser.userVerified) {
+     if (!existingUser.userVerified) {
           return res.status(403).json({ error: 'User not verified' });
       }
 
       // Check if the user has set all required information
-      if (!existingUser.infoSetted) {
+      if (!existingUser&&!existingUser.infoSetted) {
           return res.status(403).json({ error: 'User information not set' });
       }
 
@@ -105,18 +113,46 @@ login: async (req, res) => {
           return res.status(403).json({ error: 'User documents not uploaded' });
       }
 
-      // Compare the provided password with the hashed password
-      
+       // Generate JWT token with user ID, email
+       const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
+
+       // Set cookie with JWT token
+       res.cookie('jwt', token,cookieOptions);
 
       // If everything is okay, return success
-      res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
 
   } catch (error) {
       // If an unexpected error occurs, return a 500 error
       console.error('Login error:', error);
       res.status(500).json({ error: 'Internal server error' });
   }
-}
+},
+  addMahram:async(req,res)=>{
+   const {email,numéro_national_mahram}=req.body;
+   try {
+    const existingUser = await user.findUserByemail(email)
+
+      if (!existingUser||!existingUser.email) {
+          // If user doesn't exist, return a 404 error
+          console.log('hh');
+          return res.status(404).json({ error: 'User not found' });
+      }
+      if(existingUser.sexe=="ذكر"){
+        return res.status(404).json({error:'تم تحديد الجنس: ذكر,هذا الحقل لا يخصك'});
+      }else{
+        if(existingUser.sexe=="انثى"){
+          if(await candidat.linkToMahram(email,numéro_national_mahram)){
+           return res.status(200).json('mahram added');
+          }else{
+           return res.status(404).json('error while adding mahram ');
+          }
+        }
+      }
+   } catch (error) {
+    
+   }
+  }
 
 
 }

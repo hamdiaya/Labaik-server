@@ -160,8 +160,60 @@ const user={
         return false;
       }
     },
+
+    findUserByNuméroNationale:async (numéro_nationale)=> {
+      try {
+          // Query the "candidats" table to find the user by email
+          const { data, error } = await supabase
+              .from('candidats_duplicate')
+              .select('*')
+              .eq('numéro_national', numéro_nationale)
+              .single(); // Assuming the email is unique
+  
+          if (error) {
+              throw error;
+          }
+  
+          if (!data) {
+              console.log('User not found');
+              return null; // User not found
+          }
+
+          return data; // Return the user data
+      } catch (error) {
+          console.error('Error finding user by numéro_nationale_mahram:', error.message);
+          return error;
+      }
+  },
     
-    
+  linkToMahram:async(email,numéro_nationale_mahram)=>{
+    try {
+      // Search for user with numéro_national equal to numéro_nationale_mahram
+      const mahramUser = await user.findUserByNuméroNationale(numéro_nationale_mahram);
+      console.log(mahramUser);
+      if (!mahramUser|| mahramUser.sexe=='انثى') {
+        console.error('Mahram user not found');
+        return false;
+      }
+  
+      // Update the row with the specified email to set numéro_mahram
+      const { data, error } = await supabase
+        .from('candidats_duplicate')
+        .update({ numéro_nationale_mahram: numéro_nationale_mahram })
+        .eq('email', email);
+      
+      if (error) {
+        console.error('Error linking to Mahram:', error.message);
+        return false;
+      }
+  
+      return true; // Successfully linked to Mahram
+    } catch (error) {
+      console.error('Error linking to Mahram:', error.message);
+      return false;
+    }
+
+  }  
     
 
 
