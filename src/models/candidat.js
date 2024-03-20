@@ -20,15 +20,15 @@ const user={
    
     findUserByemail:async (email)=> {
         try {
-            // Query the "candidats" table to find the user by phone number
+            // Query the "candidats" table to find the user by email
             const { data, error } = await supabase
                 .from('candidats_duplicate')
                 .select('*')
                 .eq('email', email)
-                .single(); // Assuming the phone number is unique
+                .single(); // Assuming the email is unique
     
             if (error) {
-                return error;
+                throw error;
             }
     
             if (!data) {
@@ -38,7 +38,7 @@ const user={
   
             return data; // Return the user data
         } catch (error) {
-            console.error('Error finding user by phone number:', error.message);
+            console.error('Error finding user by email:', error.message);
             return error;
         }
     },
@@ -122,7 +122,17 @@ const user={
         return false;
       }
     }
-      
+    
+    
+
+
+
+
+
+
+
+
+    
 }
 
   module.exports=user;
