@@ -28,7 +28,7 @@ const user={
                 .single(); // Assuming the email is unique
     
             if (error) {
-                throw error;
+                throw error; 
             }
     
             if (!data) {

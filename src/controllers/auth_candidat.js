@@ -61,14 +61,20 @@ login: async (req, res) => {
           // If user doesn't exist, return a 404 error
           return res.status(404).json({ error: 'User not found' });
       }
+  // Compare the provided password with the hashed password
+      const passwordMatch = await bcrypt.compare(password, existingUser.password);
 
+      if (!passwordMatch) {
+          // If passwords don't match, return a 401 error
+          return res.status(401).json({ error: 'Incorrect password' });
+      }
       // Check if the user is verified
-      if (!existingUser.userVerified) {
+     if (!existingUser.userVerified) {
           return res.status(403).json({ error: 'User not verified' });
       }
 
       // Check if the user has set all required information
-      if (!existingUser.infoSetted) {
+      if (!existingUser&&!existingUser.infoSetted) {
           return res.status(403).json({ error: 'User information not set' });
       }
 
@@ -77,13 +83,7 @@ login: async (req, res) => {
           return res.status(403).json({ error: 'User documents not uploaded' });
       }
 
-      // Compare the provided password with the hashed password
-      const passwordMatch = await bcrypt.compare(password, existingUser.password);
-
-      if (!passwordMatch) {
-          // If passwords don't match, return a 401 error
-          return res.status(401).json({ error: 'Incorrect password' });
-      }
+    
 
       // If everything is okay, return success
       res.status(200).json({ message: 'Login successful' });
