@@ -7,4 +7,5 @@ router.post('/signup', auth_candidat.signUp);
 router.post('/sendConfirmationCode',auth_candidat.sendConfirmationCode);
 router.post('/verifyConfirmationCode',auth_candidat.verifyConfirmationCode);
 router.post('/setCandidatInfo',auth_candidat.setCandidatInfo);
+router.post('/login', auth_candidat.login);
 module.exports=router;
