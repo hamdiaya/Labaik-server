@@ -2,6 +2,15 @@ const user = require('../models/candidat');
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
 const moment = require('moment');
+
+const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
+const cookieOptions = {
+  httpOnly: true,
+  maxAge: 3000*30*24*60*60, // month in milliseconds
+  secure: true, // Set to true in production if using HTTPS
+  sameSite: 'None', 
+};
+
 const auth_controller={
 
     signUp:async(req, res) =>{
@@ -105,11 +114,14 @@ login: async (req, res) => {
           return res.status(403).json({ error: 'User documents not uploaded' });
       }
 
-      // Compare the provided password with the hashed password
-      
+       // Generate JWT token with user ID, email
+       const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
+
+       // Set cookie with JWT token
+       res.cookie('jwt', token,cookieOptions);
 
       // If everything is okay, return success
-      res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
 
   } catch (error) {
       // If an unexpected error occurs, return a 500 error
