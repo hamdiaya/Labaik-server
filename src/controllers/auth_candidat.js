@@ -1,6 +1,6 @@
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
-
+const moment = require('moment');
 const auth_controller={
 
     signUp:async(req, res) =>{
@@ -35,7 +35,9 @@ const auth_controller={
       },
 
 
-     verifyConfirmationCode: async (req, res) => {
+
+
+ verifyConfirmationCode: async (req, res) => {
   const { email, confirmationCode } = req.body;
   try {
     const verified = await candidat.verifyConfirmationCode(email, confirmationCode);
@@ -48,6 +50,23 @@ const auth_controller={
     res.status(500).json('error');
   }
 },
+
+setCandidatInfo: async (req, res) => {
+  const { email, firstName_fr, lastName_fr, sexe, date_of_birth, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence } = req.body;
+  try {
+    const formattedDate = moment(date_of_birth, 'DD/MM/YYYY').format('YYYY-MM-DD');
+    const result = await candidat.setCandidatInfo(email, firstName_fr, lastName_fr, sexe, formattedDate, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence);
+    if (result) {
+      res.status(200).json({ message: 'Candidat info updated successfully' });
+    } else {
+      res.status(404).json({ error: 'User not found or error updating candidat info' });
+    }
+  } catch (error) {
+    console.error('Error setting candidat info:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
         
 }
 
