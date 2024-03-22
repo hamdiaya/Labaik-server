@@ -162,7 +162,32 @@ const user={
     },
     
     
+  
+
+
+
+    findById: async (userId) => {
+      try {
+        // Query the database to find the user by ID
+        const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .select('*')
+          .eq('id', userId)
+          .single();
     
+        if (error) {
+          throw error;
+        }
+    
+        return data;
+      } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        throw error;
+      }
+    }
+    
+
+
 
 
 
