@@ -1,7 +1,14 @@
-const user = require('../models/candidat');
+
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
-const moment = require('moment');
+const jwt=require('jsonwebtoken');
+const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
+const cookieOptions = {
+  httpOnly: true,
+  maxAge: 3000*30*24*60*60, // month in milliseconds
+  secure: true, // Set to true in production if using HTTPS
+  sameSite: 'None', 
+};
 const auth_controller={
 
     signUp:async(req, res) =>{
@@ -9,13 +16,12 @@ const auth_controller={
         try {
           const hashedPassword=await bcrypt.hash(password,10);
           const user = await candidat.createCandidat(firstName,lastName,email,hashedPassword);
+          console.log(user);
           if(user!=null){
-           
             res.status(404).json('account already exist');
           }else{
             res.status(201).json('account created');
-          }
-          
+          } 
         } catch (error) {
           res.status(400).json({ error: error.message });
         }
@@ -26,10 +32,12 @@ const auth_controller={
         const { email } = req.body;
        
           try {
-            if(await candidat.sendConfirmationCodeByEmail(email)){
+            const data=await candidat.sendConfirmationCodeByEmail(email);
+            console.log(data);
+            if(data=="confirmation code sent successfully"){
               res.status(200).json({ message: 'Confirmation code sent' });
             }else{
-              res.status(400).json({ message:'email not found' });
+              res.status(400).json({ message:data.toString() });
             }
         
           } catch (error) {
@@ -44,32 +52,18 @@ const auth_controller={
  verifyConfirmationCode: async (req, res) => {
   const { email, confirmationCode } = req.body;
   try {
-    const verified = await candidat.verifyConfirmationCode(email, confirmationCode);
-    if (verified) {
-      res.status(200).json('verified');
+    const data = await candidat.verifyConfirmationCode(email, confirmationCode);
+    if (data=="user verified") {
+      res.status(200).json('user verified successfully');
     } else {
-      res.status(400).json('not verified');
+      res.status(400).json({message:data.toString()});
     }
   } catch (error) {
     res.status(500).json('error');
   }
 },
 
-setCandidatInfo: async (req, res) => {
-  const { email, firstName_fr, lastName_fr, sexe, date_of_birth, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence } = req.body;
-  try {
-    const formattedDate = moment(date_of_birth, 'DD/MM/YYYY').format('YYYY-MM-DD');
-    const result = await candidat.setCandidatInfo(email, firstName_fr, lastName_fr, sexe, formattedDate, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence);
-    if (result) {
-      res.status(200).json({ message: 'Candidat info updated successfully' });
-    } else {
-      res.status(404).json({ error: 'User not found or error updating candidat info' });
-    }
-  } catch (error) {
-    console.error('Error setting candidat info:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-},
+
 
 
 login: async (req, res) => {
@@ -77,13 +71,13 @@ login: async (req, res) => {
 
   try {
       // Check if the user with the given email exists
-      const existingUser = await user.findUserByemail(email)
+      const existingUser = await candidat.findUserByemail(email)
 
       if (!existingUser||!existingUser.email) {
           // If user doesn't exist, return a 404 error
           return res.status(404).json({ error: 'User not found' });
       }
-      console.log(existingUser.password);
+     
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
 
       if (!passwordMatch) {
@@ -91,12 +85,12 @@ login: async (req, res) => {
           return res.status(401).json({ error: 'Incorrect password' });
       }
       // Check if the user is verified
-      if (!existingUser.userVerified) {
+     if (!existingUser.userVerified) {
           return res.status(403).json({ error: 'User not verified' });
       }
 
       // Check if the user has set all required information
-      if (!existingUser.infoSetted) {
+      if (!existingUser&&!existingUser.infoSetted) {
           return res.status(403).json({ error: 'User information not set' });
       }
 
@@ -105,19 +99,31 @@ login: async (req, res) => {
           return res.status(403).json({ error: 'User documents not uploaded' });
       }
 
-      // Compare the provided password with the hashed password
-      
+       // Generate JWT token with user ID, email
+       const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
+
+       // Set cookie with JWT token
+       res.cookie('token', token,cookieOptions);
 
       // If everything is okay, return success
-      res.status(200).json({ message: 'Login successful' });
+      res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
 
   } catch (error) {
       // If an unexpected error occurs, return a 500 error
       console.error('Login error:', error);
       res.status(500).json({ error: 'Internal server error' });
   }
-}
+},
 
+logout:async (req, res) => {
+  try {
+    res.clearCookie('token');
+    res.status(200).json({ message: 'Logout successful' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 }
 
