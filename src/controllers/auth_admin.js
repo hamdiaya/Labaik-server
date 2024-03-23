@@ -19,7 +19,7 @@ const adminController = {
 
       const adminData = await admin.findByUsername(username);
 
-      if (!adminData) {
+      if (adminData = null) {
         console.log('Admin not found');
         return res.status(404).json({ error: 'Admin not found' });
       }

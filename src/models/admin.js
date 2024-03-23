@@ -20,7 +20,7 @@ const admin = {
       return data;
     } catch (error) {
       console.error('Error fetching admin by username:', error.message);
-      throw error;
+      return data;
     }
   }
 };
