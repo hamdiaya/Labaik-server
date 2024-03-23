@@ -121,7 +121,6 @@ const user={
         return 'Error verifying confirmation code:';
       }
     },
-    
     setCandidatInfo:async(email,firstName_fr,lastName_fr,sexe,date_of_birth,numéro_national,father_name_arabe,mother_first_name_arabe,mother_last_name_arabe,wilaya_résidence,commune_résidence,ancienté)=>{
       try {
         // Check if the user exists
@@ -173,6 +172,62 @@ const user={
       }
     },
 
+
+    
+
+
+
+    findById: async (userId) => {
+      try {
+        // Query the database to find the user by ID
+        const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .select('*')
+          .eq('id', userId)
+          .single();
+    
+        if (error) {
+          throw error;
+        }
+    
+        return data;
+      } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        throw error;
+      }
+    },
+    linkToMahram:async(email,numéro_nationale_mahram,relation_with_mahram)=>{
+      try {
+       
+        // Search for user with numéro_national equal to numéro_nationale_mahram
+        const mahramUser = await user.findUserByNuméroNationale(numéro_nationale_mahram);
+        console.log(mahramUser);
+        if (!mahramUser|| !mahramUser.email) {
+        
+          return 'Mahram user not found , the mahram must register' ;
+        }
+        if(mahramUser.sexe=='انثى'){
+          return 'Mahram must be a male' ;
+        }
+        // Update the row with the specified email to set numéro_mahram
+        const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .update({ numéro_nationale_mahram: numéro_nationale_mahram ,current:true})
+          .eq('email', email);
+        
+        if (error) {
+       
+          return 'Error linking to Mahram:';
+        }
+    
+        return ' Successfully linked to Mahram'; // Successfully linked to Mahram
+      } catch (error) {
+       
+        return 'Error linking to Mahram:';
+      }
+  
+    },
+
     findUserByNuméroNationale:async (numéro_nationale)=> {
       try {
           // Query the "candidats" table to find the user by email
@@ -194,42 +249,12 @@ const user={
           return data; // Return the user data
       } catch (error) {
           console.error('Error finding user by numéro_nationale_mahram:', error.message);
-          return 'Error finding user by numéro_nationale_mahram:';
+          return 'Error finding user by numéro';
       }
   },
     
-  linkToMahram:async(email,numéro_nationale_mahram,relation_with_mahram)=>{
-    try {
-     
-      // Search for user with numéro_national equal to numéro_nationale_mahram
-      const mahramUser = await user.findUserByNuméroNationale(numéro_nationale_mahram);
-      console.log(mahramUser);
-      if (!mahramUser|| !mahramUser.email) {
-      
-        return 'Mahram user not found , the mahram must register' ;
-      }
-      if(mahramUser.sexe=='انثى'){
-        return 'Mahram must be a male' ;
-      }
-      // Update the row with the specified email to set numéro_mahram
-      const { data, error } = await supabase
-        .from('candidats_duplicate')
-        .update({ numéro_nationale_mahram: numéro_nationale_mahram ,current:true})
-        .eq('email', email);
-      
-      if (error) {
-     
-        return 'Error linking to Mahram:';
-      }
-  
-      return ' Successfully linked to Mahram'; // Successfully linked to Mahram
-    } catch (error) {
-     
-      return 'Error linking to Mahram:';
-    }
 
-  }  
-    
+
 
 
 

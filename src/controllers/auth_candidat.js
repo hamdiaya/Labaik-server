@@ -1,7 +1,6 @@
 
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
-
 const jwt=require('jsonwebtoken');
 const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
 const cookieOptions = {
@@ -104,7 +103,7 @@ login: async (req, res) => {
        const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
 
        // Set cookie with JWT token
-       res.cookie('jwt', token,cookieOptions);
+       res.cookie('token', token,cookieOptions);
 
       // If everything is okay, return success
       res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
@@ -116,8 +115,16 @@ login: async (req, res) => {
   }
 },
 
+logout:async (req, res) => {
+  try {
+    res.clearCookie('token');
+    res.status(200).json({ message: 'Logout successful' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
- 
 }
 
 
