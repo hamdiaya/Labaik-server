@@ -49,7 +49,7 @@ const user={
 
     // Check if the user exists
     const userData = await user.findUserByemail(email);
-    console.log(userData);
+    //console.log(userData);
     if (!userData||!userData.email) {
       return 'user not found';
     }
@@ -189,7 +189,7 @@ const user={
         if (error) {
           throw error;
         }
-    
+    console.log(data);
         return data;
       } catch (error) {
         console.error('Error fetching user by ID:', error);
