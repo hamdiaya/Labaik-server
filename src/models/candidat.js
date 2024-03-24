@@ -15,7 +15,7 @@ const user={
         console.error('Error creating user:', error);
         return error;
     }
-     },
+     }, 
    
     findUserByemail:async (email)=> {
         try {
@@ -27,17 +27,16 @@ const user={
                 .single(); // Assuming the email is unique
     
             if (error) {
-                throw error; 
+                return error;
             }
     
-            if (!data) {
+            if (!data|| !data.email) {
                 console.log('User not found');
-                return null; // User not found
+                return 'User not found'; // User not found
             }
   
             return data; // Return the user data
         } catch (error) {
-            console.error('Error finding user by email:', error.message);
             return error;
         }
     },
@@ -50,9 +49,9 @@ const user={
 
     // Check if the user exists
     const userData = await user.findUserByemail(email);
-    if (!userData) {
-      console.error('User not found');
-      return false;
+    console.log(userData);
+    if (!userData||!userData.email) {
+      return 'user not found';
     }
 
     // Update user record with the confirmation code
@@ -64,7 +63,7 @@ const user={
 
     if (userError) {
       console.error('Error updating user with confirmation code:', userError.message);
-      return false;
+      return 'Error updating user with confirmation code';
     }
 
     // Send email with confirmation code
@@ -84,10 +83,10 @@ const user={
     };
 
     await transporter.sendMail(mailOptions);
-    return true; // Confirmation code sent successfully
+    return 'confirmation code sent successfully'; // Confirmation code sent successfully
   } catch (error) {
-    console.error('Error sending confirmation code email:', error.message);
-    return false;
+  
+    return 'Error sending confirmation code email:';
   }
 },
 
@@ -100,7 +99,7 @@ const user={
       try {
         const userData = await user.findUserByemail(email);
         if (!userData || !userData.confirmationCode) {
-          return false;
+          return 'user not found';
         }
        
         if (confirmationCode === userData.confirmationCode) {
@@ -108,31 +107,36 @@ const user={
             .from('candidats_duplicate')
             .update({ userVerified: true })
             .eq('email', email);
+            
           if (error) {
-            console.error('Error updating user verification status:', error.message);
-            return false;
+            
+            return 'Error updating user verification status:';
           }
-          return true;
+          return 'user verified';
         } else {
-          return false;
+          return 'confirmation code is wrong';
         }
       } catch (error) {
-        console.error('Error verifying confirmation code:', error.message);
-        return false;
+      
+        return 'Error verifying confirmation code:';
       }
     },
-    
-    setCandidatInfo:async(email,firstName_fr,lastName_fr,sexe,date_of_birth,numéro_national,father_name_arabe,mother_first_name_arabe,mother_last_name_arabe,wilaya_résidence,commune_résidence)=>{
+    setCandidatInfo:async(email,firstName_fr,lastName_fr,sexe,date_of_birth,numéro_national,father_name_arabe,mother_first_name_arabe,mother_last_name_arabe,wilaya_résidence,commune_résidence,ancienté)=>{
       try {
         // Check if the user exists
-        const userData = await user.findUserByemail(email);
-        if (!userData||!userData.email) {
-          console.error('User not found');
-          return false;
+        const data = await user.findUserByemail(email);
+        if (!data||!data.email) {
+          return 'User not found';
         }
-    
-        // Update the row with the provided values
-        const { data, error } = await supabase
+      
+        if(data.numéro_national!=null&&data.numéro_national!=numéro_national){
+          return "vous ne pouves pas changer le numéro nationale";
+        }
+       const userData=await user.findUserByNuméroNationale(numéro_national);
+        if(!userData||!userData.email||(userData!=null&&userData.email==email)){
+          
+          const { data, error } = await supabase
+          
           .from('candidats_duplicate')
           .update({
             firstName_fr: firstName_fr,
@@ -146,23 +150,30 @@ const user={
             wilaya_résidence: wilaya_résidence,
             commune_résidence: commune_résidence,
             infoSetted:true,
+            ancienté:ancienté,
           })
           .eq('email', email);
     
         if (error) {
-          console.error('Error updating candidat info:', error.message);
-          return false;
+          console.log(error);
+          return 'Error updating candidat info';
         }
     
-        return true; // Candidat info updated successfully
+        return 'candidate informations added successfully';
+
+        }else{
+          return 'numéro nationale deja utilisée';
+        }
+        // Update the row with the provided values
+        // Candidat info updated successfully
       } catch (error) {
-        console.error('Error updating candidat info:', error.message);
-        return false;
+       console.log(error)
+        return 'Error updating candidat info:';
       }
     },
+
+
     
-    
-  
 
 
 
@@ -184,12 +195,64 @@ const user={
         console.error('Error fetching user by ID:', error);
         throw error;
       }
-    }
+    },
+    linkToMahram:async(email,numéro_nationale_mahram,relation_with_mahram)=>{
+      try {
+       
+        // Search for user with numéro_national equal to numéro_nationale_mahram
+        const mahramUser = await user.findUserByNuméroNationale(numéro_nationale_mahram);
+        console.log(mahramUser);
+        if (!mahramUser|| !mahramUser.email) {
+        
+          return 'Mahram user not found , the mahram must register' ;
+        }
+        if(mahramUser.sexe=='انثى'){
+          return 'Mahram must be a male' ;
+        }
+        // Update the row with the specified email to set numéro_mahram
+        const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .update({ numéro_nationale_mahram: numéro_nationale_mahram ,current:true})
+          .eq('email', email);
+        
+        if (error) {
+       
+          return 'Error linking to Mahram:';
+        }
     
+        return ' Successfully linked to Mahram'; // Successfully linked to Mahram
+      } catch (error) {
+       
+        return 'Error linking to Mahram:';
+      }
+  
+    },
 
+    findUserByNuméroNationale:async (numéro_nationale)=> {
+      try {
+          // Query the "candidats" table to find the user by email
+          const { data, error } = await supabase
+              .from('candidats_duplicate')
+              .select('*')
+              .eq('numéro_national', numéro_nationale)
+              .single(); // Assuming the email is unique
+  
+          if (error) {
+              return error;
+          }
+  
+          if (!data||!data.email) {
+              console.log('User not found');
+              return 'user not found'; // User not found
+          }
 
-
-
+          return data; // Return the user data
+      } catch (error) {
+          console.error('Error finding user by numéro_nationale_mahram:', error.message);
+          return 'Error finding user by numéro';
+      }
+  },
+    
 
 
 
