@@ -43,7 +43,7 @@ const registration_controller={
         }
 
         const email = userc.email;
-        const {numéro_national_mahram}=req.body;
+        const {numéro_national_mahram,relation_with_mahram}=req.body;
         try {
          const existingUser = await candidat.findUserByemail(email)
      
@@ -55,7 +55,7 @@ const registration_controller={
              return res.status(404).json({error:'تم تحديد الجنس: ذكر,هذا الحقل لا يخصك'});
            }else{
              if(existingUser.sexe=="انثى"){
-               const data=await candidat.linkToMahram(email,numéro_national_mahram);
+               const data=await candidat.linkToMahram(email,numéro_national_mahram,relation_with_mahram);
                if(data==" Successfully linked to Mahram"){
                 return res.status(200).json('mahram added');
                }else{

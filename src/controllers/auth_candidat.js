@@ -161,6 +161,68 @@ logout:async (req, res) => {
     console.error('Logout error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+},
+sendResetToken: async (req, res) => {
+ const {email}=req.body;
+  // Fetch user profile from the database
+  const userc = await candidat.findUserByemail(email);
+ 
+  if(!userc||!userc.email){
+
+    res.status(400).json('user not found');
+  }
+
+    try {
+      const data=await candidat.sendResetPasswordTokenByEmail(email);
+      //console.log(data);
+      if(data=="reset token sent successfully"){
+        res.status(200).json({ message: 'reset token sent' });
+      }else{
+       
+        res.status(400).json({ message:data.toString() });
+      }
+  
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  
+},
+verifyResetToken: async (req, res) => {
+const {email,reset_token}=req.body;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findUserByemail(email);
+        if(!userc||!userc.email){
+          res.status(400).json('user not found');
+        }
+
+  try {
+    const data = await candidat.verifyResetToken(email, reset_token);
+  
+    if (data=="reset token correct") {
+      res.status(200).json('reset token correct');
+    } else {
+      res.status(400).json({message:data.toString()});
+    }
+  } catch (error) {
+    res.status(500).json('error');
+  }
+},
+resetPassword:async(req,res)=>{
+  const {email,newPassword}=req.body;
+  try {
+    const hashedPassword=await bcrypt.hash(newPassword,10);
+    const data=await candidat.reserPassword(hashedPassword,email);
+   if(data=="password changed"){
+    res.status(200).json("password changed");
+   }else{
+    res.status(400).json({message:data.toString()});
+   }
+    
+  } catch (error) {
+    res.status(400).json('error while changing password')
+  }
+
 }
 
 }
