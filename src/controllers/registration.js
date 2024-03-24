@@ -1,9 +1,22 @@
 const candidat = require('../models/candidat');
 const moment = require('moment');
+const jwt = require('jsonwebtoken');
+const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
 const registration_controller={
 
     setCandidatInfo: async (req, res) => {
-        const { email, firstName_fr, lastName_fr, sexe, date_of_birth, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence,ancienté } = req.body;
+      const token = req.cookies.token;
+        const decoded = jwt.verify(token,secretKey);
+        const userId = decoded.userId;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findById(userId);
+        if(!userc||!userc.email){
+          res.status(400).json('user not found');
+        }
+
+        const email  = userc.email;
+        const { firstName_fr, lastName_fr, sexe, date_of_birth, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence,ancienté } = req.body;
         try {
           const formattedDate = moment(date_of_birth, 'DD/MM/YYYY').format('YYYY-MM-DD');
           const result = await candidat.setCandidatInfo(email, firstName_fr, lastName_fr, sexe, formattedDate, numéro_national, father_name_arabe, mother_first_name_arabe, mother_last_name_arabe, wilaya_résidence, commune_résidence,ancienté);
@@ -19,7 +32,18 @@ const registration_controller={
       },
 
       addMahram:async(req,res)=>{
-        const {email,numéro_national_mahram}=req.body;
+        const token = req.cookies.token;
+        const decoded = jwt.verify(token,secretKey);
+        const userId = decoded.userId;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findById(userId);
+        if(!userc||!userc.email){
+          res.status(400).json('user not found');
+        }
+
+        const email = userc.email;
+        const {numéro_national_mahram}=req.body;
         try {
          const existingUser = await candidat.findUserByemail(email)
      
