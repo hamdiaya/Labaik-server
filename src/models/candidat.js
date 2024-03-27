@@ -49,7 +49,7 @@ const user={
 
     // Check if the user exists
     const userData = await user.findUserByemail(email);
-    console.log(userData);
+    //console.log(userData);
     if (!userData||!userData.email) {
       return 'user not found';
     }
@@ -187,13 +187,13 @@ const user={
           .single();
     
         if (error) {
-          throw error;
+          return error;
         }
-    
+    console.log(data);
         return data;
       } catch (error) {
         console.error('Error fetching user by ID:', error);
-        throw error;
+        return error;
       }
     },
     linkToMahram:async(email,numéro_nationale_mahram,relation_with_mahram)=>{
@@ -212,7 +212,7 @@ const user={
         // Update the row with the specified email to set numéro_mahram
         const { data, error } = await supabase
           .from('candidats_duplicate')
-          .update({ numéro_nationale_mahram: numéro_nationale_mahram ,current:true})
+          .update({ numéro_nationale_mahram: numéro_nationale_mahram ,current:true,relation_with_mahram:relation_with_mahram})
           .eq('email', email);
         
         if (error) {
@@ -252,6 +252,100 @@ const user={
           return 'Error finding user by numéro';
       }
   },
+
+
+reserPassword:async(newPassword,email)=>{
+try {
+  const userData= await user.findUserByemail(email);
+  
+  if(!userData||!userData.email){
+    return 'user not found';
+  }
+  
+  const { data, error } = await supabase
+          .from('candidats_duplicate')
+          .update({password: newPassword })
+          .eq('email', email);
+
+         
+          if (error) {
+          
+            return 'Error changing password';
+          }
+      
+          return 'password changed';
+
+} catch (error) {
+  console.log(error);
+}
+   
+},
+sendResetPasswordTokenByEmail : async (email) => {
+  try {
+    // Generate confirmation code
+    const reset_token = Math.floor(100000 + Math.random() * 900000);
+
+    // Check if the user exists
+    const userData = await user.findUserByemail(email);
+    //console.log(userData);
+    if (!userData||!userData.email) {
+      return 'user not found';
+    }
+
+    // Update user record with the confirmation code
+    // Assuming your supabase instance is imported properly
+    const { data: updatedUserData, error: userError } = await supabase
+      .from('candidats_duplicate')
+      .update({ reset_token: reset_token })
+      .eq('email', email);
+
+    if (userError) {
+      console.error('Error updating user with reset_token:', userError.message);
+      return 'Error updating user with reset_token:';
+    }
+
+    // Send email with confirmation code
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'ayahamdi404@gmail.com',
+        pass: 'yhyi ezde iheh wzop'
+      }
+    });
+
+    const mailOptions = {
+      from: 'labaik website',
+      to: email,
+      subject: 'labaik confirmation code',
+      text: `Your reset token is: ${reset_token}`
+    };
+
+    await transporter.sendMail(mailOptions);
+    return 'reset token sent successfully'; // Confirmation code sent successfully
+  } catch (error) {
+  
+    return 'Error sendingreset token email:';
+  }
+},
+verifyResetToken: async (email, reset_token) => {
+  try {
+    const userData = await user.findUserByemail(email);
+    if (!userData || !userData.email) {
+      return 'user not found';
+    }
+   
+    if (reset_token === userData.reset_token) {
+      
+      return 'reset token correct';
+    } else {
+      return 'reset token is wrong';
+    }
+  } catch (error) {
+  
+    return 'Error verifyingreset token';
+  }
+},
+
     
 
 

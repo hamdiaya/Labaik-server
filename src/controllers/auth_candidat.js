@@ -16,27 +16,51 @@ const auth_controller={
         try {
           const hashedPassword=await bcrypt.hash(password,10);
           const user = await candidat.createCandidat(firstName,lastName,email,hashedPassword);
-          console.log(user);
+         
           if(user!=null){
             res.status(404).json('account already exist');
           }else{
+            const existingUser = await candidat.findUserByemail(email)
+
+      if (!existingUser||!existingUser.email) {
+          // If user doesn't exist, return a 404 error
+          return res.status(404).json({ error: 'User not found' });
+      }
+     
+            const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
+
+            // Set cookie with JWT token
+            res.cookie('token', token,cookieOptions);
             res.status(201).json('account created');
           } 
         } catch (error) {
           res.status(400).json({ error: error.message });
-        }
+        } 
       },
 
 
       sendConfirmationCode: async (req, res) => {
-        const { email } = req.body;
+        const token = req.cookies.token;
+        const decoded = jwt.verify(token,secretKey);
+        const userId = decoded.userId;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findById(userId);
        
+        if(!userc||!userc.email){
+      
+          res.status(400).json('user not found');
+        }
+
+        const email  = userc.email;
+       console.log(email)
           try {
             const data=await candidat.sendConfirmationCodeByEmail(email);
-            console.log(data);
+            //console.log(data);
             if(data=="confirmation code sent successfully"){
               res.status(200).json({ message: 'Confirmation code sent' });
             }else{
+             
               res.status(400).json({ message:data.toString() });
             }
         
@@ -50,9 +74,23 @@ const auth_controller={
 
 
  verifyConfirmationCode: async (req, res) => {
-  const { email, confirmationCode } = req.body;
+  const token = req.cookies.token;
+        const decoded = jwt.verify(token,secretKey);
+        const userId = decoded.userId;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findById(userId);
+        if(!userc||!userc.email){
+          res.status(400).json('user not found');
+        }
+
+        const email = userc.email;
+        const  {confirmationCode } = req.body;
+        console.log(email)
+        console.log(confirmationCode)
   try {
     const data = await candidat.verifyConfirmationCode(email, confirmationCode);
+  
     if (data=="user verified") {
       res.status(200).json('user verified successfully');
     } else {
@@ -123,6 +161,68 @@ logout:async (req, res) => {
     console.error('Logout error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+},
+sendResetToken: async (req, res) => {
+ const {email}=req.body;
+  // Fetch user profile from the database
+  const userc = await candidat.findUserByemail(email);
+ 
+  if(!userc||!userc.email){
+
+    res.status(400).json('user not found');
+  }
+
+    try {
+      const data=await candidat.sendResetPasswordTokenByEmail(email);
+      //console.log(data);
+      if(data=="reset token sent successfully"){
+        res.status(200).json({ message: 'reset token sent' });
+      }else{
+       
+        res.status(400).json({ message:data.toString() });
+      }
+  
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  
+},
+verifyResetToken: async (req, res) => {
+const {email,reset_token}=req.body;
+
+        // Fetch user profile from the database
+        const userc = await candidat.findUserByemail(email);
+        if(!userc||!userc.email){
+          res.status(400).json('user not found');
+        }
+
+  try {
+    const data = await candidat.verifyResetToken(email, reset_token);
+  
+    if (data=="reset token correct") {
+      res.status(200).json('reset token correct');
+    } else {
+      res.status(400).json({message:data.toString()});
+    }
+  } catch (error) {
+    res.status(500).json('error');
+  }
+},
+resetPassword:async(req,res)=>{
+  const {email,newPassword}=req.body;
+  try {
+    const hashedPassword=await bcrypt.hash(newPassword,10);
+    const data=await candidat.reserPassword(hashedPassword,email);
+   if(data=="password changed"){
+    res.status(200).json("password changed");
+   }else{
+    res.status(400).json({message:data.toString()});
+   }
+    
+  } catch (error) {
+    res.status(400).json('error while changing password')
+  }
+
 }
 
 }
