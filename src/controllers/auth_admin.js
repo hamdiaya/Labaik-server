@@ -36,7 +36,7 @@ const adminController = {
          const token = jwt.sign({ adminId: existingUser.id, username: existingUser.username }, secretKey, {});
   
          // Set cookie with JWT token
-         res.cookie('token', token,cookieOptions);
+         res.cookie('Admintoken', token,cookieOptions);
   
         // If everything is okay, return success
         res.status(200).json({ message: 'Login successful',token});
@@ -45,6 +45,15 @@ const adminController = {
         // If an unexpected error occurs, return a 500 error
         console.error('Login error:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+  logout:async (req, res) => {
+    try {
+      res.clearCookie('Admintoken');
+      res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   },
 };

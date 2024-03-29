@@ -2,9 +2,10 @@
 const candidat = require('../models/candidat');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
+const Cookies = require('js-cookie');
 const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
 const cookieOptions = {
-  httpOnly: true,
+  httpOnly: false,
   maxAge: 3000*30*24*60*60, // month in milliseconds
   secure: true, // Set to true in production if using HTTPS
   sameSite: 'None', 
@@ -21,28 +22,29 @@ const auth_controller={
             res.status(404).json('account already exist');
           }else{
             const existingUser = await candidat.findUserByemail(email)
-
+  console.log(existingUser);
       if (!existingUser||!existingUser.email) {
           // If user doesn't exist, return a 404 error
           return res.status(404).json({ error: 'User not found' });
       }
      
-            const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
+            const token =  jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
 
             // Set cookie with JWT token
             res.cookie('token', token,cookieOptions);
-            res.status(201).json('account created');
+           
+            res.status(200).json('account created');
           } 
         } catch (error) {
           res.status(400).json({ error: error.message });
+          console.log(res);
         } 
       },
 
 
       sendConfirmationCode: async (req, res) => {
-        const token = req.cookies.token;
-        const decoded = jwt.verify(token,secretKey);
-        const userId = decoded.userId;
+
+        const userId = req.decoded.userId;
 
         // Fetch user profile from the database
         const userc = await candidat.findById(userId);
@@ -53,7 +55,7 @@ const auth_controller={
         }
 
         const email  = userc.email;
-       console.log(email)
+    
           try {
             const data=await candidat.sendConfirmationCodeByEmail(email);
             //console.log(data);
@@ -74,9 +76,8 @@ const auth_controller={
 
 
  verifyConfirmationCode: async (req, res) => {
-  const token = req.cookies.token;
-        const decoded = jwt.verify(token,secretKey);
-        const userId = decoded.userId;
+ 
+        const userId = req.decoded.userId;
 
         // Fetch user profile from the database
         const userc = await candidat.findById(userId);
@@ -113,38 +114,43 @@ login: async (req, res) => {
 
       if (!existingUser||!existingUser.email) {
           // If user doesn't exist, return a 404 error
-          return res.status(404).json({ error: 'User not found' });
+          return res.status(404).json( 'User not found' );
       }
-     
+   
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
 
       if (!passwordMatch) {
           // If passwords don't match, return a 401 error
-          return res.status(401).json({ error: 'Incorrect password' });
+          return res.status(401).json( {data:'Incorrect password' });
       }
-      // Check if the user is verified
-     if (!existingUser.userVerified) {
-          return res.status(403).json({ error: 'User not verified' });
-      }
-
-      // Check if the user has set all required information
-      if (!existingUser&&!existingUser.infoSetted) {
-          return res.status(403).json({ error: 'User information not set' });
-      }
-
-      // Check if the user has uploaded all required documents
-      if (!existingUser.documentsUploaded) {
-          return res.status(403).json({ error: 'User documents not uploaded' });
-      }
-
        // Generate JWT token with user ID, email
        const token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, secretKey, {});
 
        // Set cookie with JWT token
-       res.cookie('token', token,cookieOptions);
+       
+      // Check if the user is verified
+     if (!existingUser.userVerified) {
+      res.cookie('token', token,cookieOptions);
+        return res.status(402).json({ data: 'User not verified' });
+      }
+
+      // Check if the user has set all required information
+      if (!existingUser.infoSetted) {
+        res.cookie('token', token,cookieOptions);
+         return  res.status(403).json( {data:'User information not set'} );
+      }
+
+      // Check if the user has uploaded all required documents
+      if (!existingUser.documentsUploaded) {
+           res.cookie('token', token,cookieOptions);
+           return res.status(405).json({ data: 'User documents not uploaded' });
+      }
+
+      
 
       // If everything is okay, return success
-      res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
+      res.cookie('token', token,cookieOptions);
+      return res.status(200).json({ message: 'Login successful', userId: existingUser.id, email: existingUser.email});
 
   } catch (error) {
       // If an unexpected error occurs, return a 500 error
@@ -164,12 +170,13 @@ logout:async (req, res) => {
 },
 sendResetToken: async (req, res) => {
  const {email}=req.body;
+ 
   // Fetch user profile from the database
   const userc = await candidat.findUserByemail(email);
- 
+
   if(!userc||!userc.email){
 
-    res.status(400).json('user not found');
+    res.status(404).json('user not found');
   }
 
     try {
@@ -192,6 +199,7 @@ const {email,reset_token}=req.body;
 
         // Fetch user profile from the database
         const userc = await candidat.findUserByemail(email);
+        console.log(userc)
         if(!userc||!userc.email){
           res.status(400).json('user not found');
         }
@@ -223,9 +231,24 @@ resetPassword:async(req,res)=>{
     res.status(400).json('error while changing password')
   }
 
+},
+getUserName:async(req,res)=>{
+  const {email}=req.body;
+  try {
+    const user=await candidat.findUserByemail(email);
+    if(!user||!user.email){
+      res.status(400).json('user not found')
+    }else{
+      res.status(200).json(user);
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
 }
 
 }
 
 
 module.exports=auth_controller;
+
+

@@ -198,7 +198,7 @@ const user={
     },
     linkToMahram:async(email,numéro_nationale_mahram,relation_with_mahram)=>{
       try {
-       
+       console.log('hehe')
         // Search for user with numéro_national equal to numéro_nationale_mahram
         const mahramUser = await user.findUserByNuméroNationale(numéro_nationale_mahram);
         console.log(mahramUser);
@@ -209,6 +209,7 @@ const user={
         if(mahramUser.sexe=='انثى'){
           return 'Mahram must be a male' ;
         }
+       
         // Update the row with the specified email to set numéro_mahram
         const { data, error } = await supabase
           .from('candidats_duplicate')
