@@ -1,15 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const fileController = require('../controllers/fileController');
-const uploadMiddleware = require('../middleware/uploadMiddleware');
-
-
-
+const verifyToken = require('../middleware/verifyToken');
 const registration_controller = require('../controllers//registration');
 
-router.post('/setCandidatInfo',registration_controller.setCandidatInfo);
-router.post('/addMahram', registration_controller.addMahram);
-router.post('/upload', uploadMiddleware, fileController.uploadFile);
-
-
+router.post('/setCandidatInfo',verifyToken,registration_controller.setCandidatInfo);
+router.post('/addMahram',verifyToken, registration_controller.addMahram);
 module.exports=router;

@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; 
 
-const verifyToken = (req, res, next) => {
+const verifyAgentToken = (req, res, next) => {
   const token = req.headers.cookie
-    .split('; ') // Split header by semicolons and spaces
-    .find((row) => row.startsWith('token=')) // Find row starting with 'token='
+    .split('; ') 
+    .find((row) => row.startsWith('Agenttoken=')) // Find row starting with 'AgentToken='
     ?.split('=')[1]; // Extract value after the '=' sign (if found)
 
   if (!token) {
@@ -12,7 +12,7 @@ const verifyToken = (req, res, next) => {
   }
 
   // Wrap verification in a promise-based function
-  const verifyTokenAsync = (token, secretKey) => new Promise((resolve, reject) => {
+  const verifyAgentTokenAsync = (token, secretKey) => new Promise((resolve, reject) => {
     jwt.verify(token, secretKey, (error, decoded) => {
       if (error) {
         reject(error);
@@ -23,9 +23,9 @@ const verifyToken = (req, res, next) => {
   });
 
   // Use async/await or .then/.catch for error handling
-  verifyTokenAsync(token, secretKey)
+  verifyAgentTokenAsync(token, secretKey)
     .then(decoded => {
-        req.decoded=decoded;
+      req.decoded = decoded;
       next(); // Pass decoded payload to next middleware or route handler
     })
     .catch(error => {
@@ -34,4 +34,4 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-module.exports = verifyToken;
+module.exports = verifyAgentToken;

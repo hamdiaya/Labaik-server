@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
-const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; 
+const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; // Replace with your actual secret key
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.cookie
     .split('; ') // Split header by semicolons and spaces
-    .find((row) => row.startsWith('token=')) // Find row starting with 'token='
+    .find((row) => row.startsWith('Admintoken=')) // Find row starting with 'token='
     ?.split('=')[1]; // Extract value after the '=' sign (if found)
 
   if (!token) {
