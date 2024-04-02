@@ -7,7 +7,8 @@ const authCandidat = require('./routes/auth_candidat');
 const authAdmin = require('./routes/auth_admin');
 const registration = require('./routes/registration');
 const profile = require('./routes/profile');
-
+const hadjInfo=require('./routes/hadj_info');
+const tirage=require('./routes/tirage');
 const app = express();
 
 // Use CORS middleware
@@ -23,6 +24,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Routes
+app.use('/tirage',tirage );
+app.use('/hadjInfo',hadjInfo );
 app.use('/authAdmin', authAdmin);
 app.use('/profile', profile);
 app.use('/authCnadidat', authCandidat);

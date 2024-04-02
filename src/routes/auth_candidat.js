@@ -11,7 +11,6 @@ router.post('/verifyConfirmationCode',verifyToken,auth_candidat.verifyConfirmati
 router.post('/logout', verifyToken, auth_candidat.logout);
 router.post('/login', auth_candidat.login);
 router.get('/getWilayas',algeria_geo.getWilayas);
-router.get('/getCitiesByWilaya',algeria_geo.getCitiesByWilaya);
 router.post('/resetPassword', auth_candidat.resetPassword);
 router.post('/sendResetToken', auth_candidat.sendResetToken);
 router.post('/verifyResetToken', auth_candidat.verifyResetToken);
