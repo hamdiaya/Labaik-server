@@ -186,6 +186,10 @@ const user={
           .eq('id', userId)
           .single();
     
+            
+          if (!data) {
+            return null;}
+       
         if (error) {
           return error;
         }

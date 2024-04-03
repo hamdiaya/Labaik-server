@@ -5,6 +5,7 @@ const fileController = {
     uploadFile: async (req, res) => {
         const { documentType } = req.body;
         const file = req.file;
+        console.log(file);
         const token = req.cookies.token; 
 
         try {

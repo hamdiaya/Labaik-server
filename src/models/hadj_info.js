@@ -112,7 +112,6 @@ const hadjInfo = {
       console.error("Unexpected error:", error);
     }
   },
-
   updatePlacesDisponiblesOfWilaya: async () => {
     try {
       const { data: communesData, error: communesError } = await supabase
@@ -207,7 +206,7 @@ const hadjInfo = {
       let totalHabitants = 0;
       // Iterate over each row in the result set
       data.forEach((row) => {
-        // Assuming `nombre_des_habitants` is a numeric value in each row
+        // Assuming nombre_des_habitants is a numeric value in each row
         totalHabitants += row.nombre_des_habitants;
       });
       return totalHabitants;

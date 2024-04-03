@@ -97,4 +97,4 @@ const hadjInfoController = {
     }
   }
 };
-module.exports = hadjInfoController;
+module.exports = hadjInfoController; 
