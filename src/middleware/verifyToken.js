@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; // Replace with your actual secret key
+const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; 
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.cookie

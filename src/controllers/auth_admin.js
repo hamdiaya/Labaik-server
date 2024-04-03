@@ -14,11 +14,11 @@ const secretKey = "aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd";
 const adminController = {
   login: async (req, res) => {
     const { nationalNum, password } = req.body;
-
+console.log(nationalNum,password);
     try {
       // Check if the user with the given email exists
       const existingUser = await admin.findByUsername(nationalNum);
-     
+     console.log(existingUser)
       if (!existingUser || !existingUser.nationalNum) {
         // If user doesn't exist, return a 404 error
         return res.status(404).json({ error: "admin not found" });

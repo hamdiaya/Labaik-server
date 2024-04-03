@@ -15,7 +15,7 @@ const user={
         console.error('Error creating user:', error);
         return error;
     }
-     },
+     }, 
    
     findUserByemail:async (email)=> {
         try {
@@ -348,10 +348,6 @@ verifyResetToken: async (email, reset_token) => {
 },
 
     
-
-
-
-
 
 
 
