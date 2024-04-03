@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const auth_candidat = require("../controllers/auth_candidat");
+const fileController = require("../controllers/fileController");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 
 router.post("/signup", auth_candidat.signUp);
 router.post(
@@ -19,5 +21,6 @@ router.post("/login", auth_candidat.login);
 router.post("/resetPassword", auth_candidat.resetPassword);
 router.post("/sendResetToken", auth_candidat.sendResetToken);
 router.post("/verifyResetToken", auth_candidat.verifyResetToken);
-router.post("/getUserName", auth_candidat.getUserName);
+router.post("/registration//upload", uploadMiddleware, fileController.uploadFile );
+router.post("/getUserName",auth_candidat.getUserName);
 module.exports = router;
