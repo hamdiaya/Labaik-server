@@ -7,7 +7,7 @@ const hadjInfo = {
     la_date_de_tirage,
     heure_de_tirage,
     algorithm,
-    formule
+  
   ) => {
     try {
       // Insert hadj data into the 'hadj_info' table
@@ -23,7 +23,7 @@ const hadjInfo = {
             la_date_de_tirage: formattedDate,
             heure_de_tirage: heure_de_tirage,
             algorithm: algorithm,
-            formule:formule
+           
           },
         ]);
 

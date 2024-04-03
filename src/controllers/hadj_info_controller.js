@@ -9,7 +9,6 @@ const hadjInfoController = {
       la_date_de_tirage,
       heure_de_tirage,
       algorithm,
-      formule
     } = req.body;
     try {
       const data = await hadjInfo.addHadjInfo(
@@ -18,7 +17,6 @@ const hadjInfoController = {
         la_date_de_tirage,
         heure_de_tirage,
         algorithm,
-        formule
       );
       console.log(data);
       if (data != null) {
