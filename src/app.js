@@ -9,8 +9,8 @@ const agentAuth = require('./routes/agent_auth');
 const agentInfos = require('./routes/agent_infos');
 const registration = require('./routes/registration');
 const profile = require('./routes/profile');
-
-
+const hadjInfo=require('./routes/hadj_info');
+const tirage=require('./routes/tirage');
 const app = express();
 
 // Use CORS middleware
@@ -26,6 +26,8 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Routes
+app.use('/tirage',tirage );
+app.use('/hadjInfo',hadjInfo );
 app.use('/authAdmin', authAdmin);
 app.use('/authAgent', agentAuth);
 app.use('/agentInfos', agentInfos);
@@ -38,3 +40,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
+
+
+
+
+
+

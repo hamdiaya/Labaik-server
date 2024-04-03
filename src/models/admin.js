@@ -1,20 +1,22 @@
 const supabase = require('../config/database');
 
 const admin = {
-  findByUsername:async (username)=> {
+  findByUsername:async (nationalNum)=> {
     try {
         // Query the "candidats" table to find the user by username
         const { data, error } = await supabase
             .from('admins')
             .select('*')
-            .eq('username', username)
-            .single(); // Assuming the username is unique
+            .eq('nationalNum',nationalNum)
+            .single();
+             // Assuming the username is unique
 
         if (error) {
+           
             return error;
         }
 
-        if (!data|| !data.username) {
+        if (!data|| !data.nationalNum) {
             console.log('User not found');
             return 'User not found'; // User not found
         }
