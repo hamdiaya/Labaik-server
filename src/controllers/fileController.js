@@ -5,7 +5,7 @@ const fileController = {
     uploadFile: async (req, res) => {
         const { documentType } = req.body;
         const file = req.file;
-        console.log(file);
+        console.log(file+"hhhhhhhhhhhhhh");
         const token = req.cookies.token; 
 
         try {
@@ -18,6 +18,7 @@ const fileController = {
                 res.status(500).json({ error: 'Failed to upload file', message: result.error });
             }
         } catch (error) {
+            console.log(error);
             console.error('Error uploading file:', error.message);
             res.status(500).json({ error: 'Internal server error' });
         }
