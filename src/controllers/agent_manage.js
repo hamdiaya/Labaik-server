@@ -71,7 +71,7 @@ const agentInfosController = {
             // Extract candidate names from the filtered query result
             const candidateNames = filteredCandidates.map(candidate => `${candidate.firstName_ar} ${candidate.lastName_ar}`);
     
-            res.json({ candidates: candidateNames });
+            res.status(200).json({ candidates: candidateNames });
         } catch (error) {
             console.error('Error fetching candidates by commune:', error.message);
             res.status(500).json({ error: 'Internal server error' });
@@ -83,7 +83,6 @@ const agentInfosController = {
 getCandidateById : async (req, res) => {
     try {
         const candidateId = req.params.id; // Extract candidate ID from request parameters
-
         // Retrieve candidate information by ID using the Candidat model
         const candidate = await Candidat.findById(candidateId);
 
