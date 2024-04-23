@@ -80,6 +80,7 @@ const agentInfosController = {
                     state:element.dossier_valide,
                 })
              })
+             console.log(responseData);
             res.status(200).json({ candidates: responseData });
         } catch (error) {
             console.error('Error fetching candidates by commune:', error.message);
@@ -138,7 +139,26 @@ searchCandidatesByNationalID: async (req, res) => {
         console.error('Error searching candidates by national ID:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
-}
+},
+dossierValidation : async (req, res) => {
+    const candidateId = req.params.id; 
+    const candidate = await Candidat.findById(candidateId);
+
+    if (!candidate) {
+        return res.status(404).json({ error: 'Candidatnot found' });
+    }
+
+    try {
+       
+        const updatedCandidate = await Candidat.updateCandidateDossierVerification(candidateId);
+       
+       
+        res.json('Candidate dossier verification status updated successfully');
+    } catch (error) {
+        console.error('Error accepting candidate verification:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+},
     
 };
 

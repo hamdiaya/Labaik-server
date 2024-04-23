@@ -352,7 +352,25 @@ verifyResetToken: async (email, reset_token) => {
 },
 
     
+updateCandidateDossierVerification : async (candidateId) => {
+  try {
+    
+    const { data, error } = await supabase
+      .from('candidats_duplicate')
+      .update({ dossier_valide: true }) 
+      .eq('id', candidateId); 
 
+    if (error) {
+      throw error;
+    }
+
+    console.log('Candidate verification status updated successfully');
+    
+  } catch (error) {
+    console.error('Error updating candidate verification status:', error.message);
+    throw error;
+  }
+},
 
 
 
