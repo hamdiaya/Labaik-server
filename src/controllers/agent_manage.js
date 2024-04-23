@@ -38,7 +38,7 @@ const agentInfosController = {
                 wilaya: wilaya,
                 latestHajInfo: latestHajInfos
             };
-
+ 
             res.json(agentResponse);
         } catch (error) {
             console.error('Error fetching agent information:', error.message);
@@ -54,7 +54,8 @@ const agentInfosController = {
             const { data: candidates, error } = await supabase
                 .from('candidats_duplicate')
                 .select('*')
-                .eq('commune_résidence', agentUsername);
+                .eq('commune_résidence', agentUsername)
+                .eq('documentsUploaded', true);
     
             if (error) {
                 throw error;
@@ -93,12 +94,32 @@ getCandidateById : async (req, res) => {
 
         // Send the candidate information in the response
         res.json(candidate);
+       
     } catch (error) {
         console.error('Error fetching candidate by ID:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 },
 
+dossierValidation : async (req, res) => {
+    const candidateId = req.params.id; 
+    const candidate = await Candidat.findById(candidateId);
+
+    if (!candidate) {
+        return res.status(404).json({ error: 'Candidatnot found' });
+    }
+
+    try {
+       
+        const updatedCandidate = await Candidat.updateCandidateDossierVerification(candidateId);
+       
+       
+        res.json('Candidate dossier verification status updated successfully');
+    } catch (error) {
+        console.error('Error accepting candidate verification:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+},
 searchCandidatesByNationalID: async (req, res) => {
     try {
         // Extract commune residence (username) of the logged-in agent

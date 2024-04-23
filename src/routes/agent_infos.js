@@ -7,6 +7,7 @@ const verifyAgentToken = require("../middleware/agentTokenVerification");
 router.get('/getAgentInfo', verifyAgentToken, agentInfosController.getAgentInfo);
 router.get('/dossier_verification',verifyAgentToken,agentInfosController.getCandidatesByCommune);
 router.get('/:id', verifyAgentToken,agentInfosController.getCandidateById);
+router.post('/:id/accept', verifyAgentToken,agentInfosController.dossierValidation )
 router.get('/search', verifyAgentToken,agentInfosController.searchCandidatesByNationalID);
 
 module.exports=router;

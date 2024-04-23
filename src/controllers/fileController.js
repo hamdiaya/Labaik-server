@@ -4,8 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 const fileController = {
     uploadFile: async (req, res) => {
         const { documentType } = req.body;
-        const file = req.file;
-        console.log(file);
+        const files = req.files;
+        console.log(files);
         const token = req.cookies.token; 
 
         try {
