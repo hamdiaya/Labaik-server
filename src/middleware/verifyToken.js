@@ -1,25 +1,37 @@
-const jwt=require('jsonwebtoken');
-const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
+const jwt = require('jsonwebtoken');
+const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; 
 
 const verifyToken = (req, res, next) => {
-    const token = req.cookies.token;
+  const token = req.headers.cookie
+    .split('; ') // Split header by semicolons and spaces
+    .find((row) => row.startsWith('token=')) // Find row starting with 'token='
+    ?.split('=')[1]; // Extract value after the '=' sign (if found)
 
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-    try {
-        jwt.verify(token, secretKey);
-             next();
-    } catch (error) {
-        
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
+  // Wrap verification in a promise-based function
+  const verifyTokenAsync = (token, secretKey) => new Promise((resolve, reject) => {
+    jwt.verify(token, secretKey, (error, decoded) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(decoded);
+      }
+    });
+  });
+
+  // Use async/await or .then/.catch for error handling
+  verifyTokenAsync(token, secretKey)
+    .then(decoded => {
+        req.decoded=decoded;
+      next(); // Pass decoded payload to next middleware or route handler
+    })
+    .catch(error => {
+      console.error(error); // Log the error for debugging
+      return res.status(401).json({ error: 'Unauthorized' });
+    });
 };
-module.exports=verifyToken;
 
-/*In this middleware, we use the verify function to check the
- validity of the token sent with the request. If the token is valid, the
-  middleware calls the next function to pass control to the next 
-  middleware function or route handler. If the token is invalid or 
-  missing, the middleware returns an error*/
+module.exports = verifyToken;
