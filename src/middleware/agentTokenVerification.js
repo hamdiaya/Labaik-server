@@ -2,11 +2,12 @@ const jwt = require('jsonwebtoken');
 const secretKey = 'aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd'; 
 
 const verifyAgentToken = (req, res, next) => {
+  
   const token = req.headers.cookie
     .split('; ') 
     .find((row) => row.startsWith('Agenttoken=')) // Find row starting with 'AgentToken='
     ?.split('=')[1]; // Extract value after the '=' sign (if found)
-
+console.log(token)
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }

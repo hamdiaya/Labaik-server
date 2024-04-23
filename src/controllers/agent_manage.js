@@ -34,8 +34,8 @@ const agentInfosController = {
             const agentResponse = {
                 id: agentInfo.id,
                 username: agentInfo.username,
-                commune: commune,
-                wilaya: wilaya,
+                commune: commune.data,
+                wilaya: wilaya.data,
                 latestHajInfo: latestHajInfos
             };
 
@@ -48,9 +48,10 @@ const agentInfosController = {
 
     getCandidatesByCommune: async (req, res) => {
         try {
+            console.log('hhhh')
             // Extract commune residence (username) of the logged-in agent
             const agentUsername = req.decoded.username;
-    
+    console.log(agentUsername);
             const { data: candidates, error } = await supabase
                 .from('candidats_duplicate')
                 .select('*')
@@ -69,9 +70,17 @@ const agentInfosController = {
             }
     
             // Extract candidate names from the filtered query result
-            const candidateNames = filteredCandidates.map(candidate => `${candidate.firstName_ar} ${candidate.lastName_ar}`);
-    
-            res.status(200).json({ candidates: candidateNames });
+            var responseData=[];
+             filteredCandidates.forEach(element=>{
+                console.log(element);
+                responseData.push({
+                    id:element.id,
+                    firstName:element.firstName_ar,
+                    lastName:element.lastName_ar,
+                    state:element.dossier_valide,
+                })
+             })
+            res.status(200).json({ candidates: responseData });
         } catch (error) {
             console.error('Error fetching candidates by commune:', error.message);
             res.status(500).json({ error: 'Internal server error' });
@@ -91,7 +100,7 @@ getCandidateById : async (req, res) => {
         }
 
         // Send the candidate information in the response
-        res.json(candidate);
+        res.status(200).json(candidate);
     } catch (error) {
         console.error('Error fetching candidate by ID:', error.message);
         res.status(500).json({ error: 'Internal server error' });
