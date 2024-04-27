@@ -49,8 +49,6 @@ const tirage_controller = {
           if (data === "error") {
             throw new Error("Error saving selected candidat");
           }
-          places -= 1;
-          candidats = candidats.filter((item) => item !== candidat);
         }
       } else {
         // If male selected
@@ -65,16 +63,22 @@ const tirage_controller = {
         if (data === "error") {
           throw new Error("Error saving selected candidat");
         }
-        places -= 1;
-        candidats = candidats.filter((item) => item !== randomObject);
       }
-//national number+ last name+ first name
+      //national number+ last name+ first name
       const selectingData = {
-        places: places,
-        candidats: candidats,
-        selected1: randomObject,
+        selected1: {
+          numéro_national: randomObject.numéro_national,
+          first_name: randomObject.firstName_ar,
+          last_name: randomObject.lastName_ar,
+        },
         selected2:
-          randomObject.sexe === "female" && mahram != null ? mahram : null,
+          randomObject.sexe === "female" && mahram != null
+            ? {
+                numéro_national: mahram.numéro_national,
+                first_name: mahram.firstName_ar,
+                last_name: mahram.lastName_ar,
+              }
+            : null,
       };
 
       res.status(200).json(selectingData);
@@ -85,9 +89,16 @@ const tirage_controller = {
 
   getCandidats: async (req, res) => {
     try {
+      const agentUsername = req.decoded.username;
+      console.log(agentUsername);
       const { data, error } = await supabase
         .from("candidats_duplicate")
-        .select("*");
+        .select(
+          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar"
+        )
+        .eq("commune_résidence", agentUsername)
+        .eq("dossier_valide", true);
+
       if (error) {
         throw new Error("Error fetching candidats");
       }
