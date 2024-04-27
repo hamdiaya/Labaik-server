@@ -22,7 +22,7 @@ const fileController = {
             }
         } catch (error) {
             console.log(error);
-            console.error('Error uploading file:', error.message);
+            //console.error('Error uploading file:', error.message);
             res.status(500).json({ error: 'Internal server error' });
         }
     },

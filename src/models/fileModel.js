@@ -14,6 +14,7 @@ const getUserIdFromToken = (token) => {
 
 const fileModel = {
     uploadFile: async (fileName, fileData, documentType,token) => {
+      
         try {
             const userId = getUserIdFromToken(token);
             if (!userId) {
