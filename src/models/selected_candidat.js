@@ -1,23 +1,62 @@
 const supabase = require('../config/database');
 
 const selected_candidat = {
- addSelectedCnadidat:async (id,commune)=> {
+ addSelectedCnadidat:async (id,commune,numéro_national,wilaya,firstName_ar,lastName_ar)=> {
     try {
         // Query the "candidats" table to find the user by username
         const { data, error } = await supabase
             .from('selected_candidats')
-            .insert({id:id,commune:commune})
+            .insert({id:id,commune:commune,numéro_national:numéro_national,wilaya:wilaya,first_name:firstName_ar,last_name:lastName_ar})
             
              // Assuming the username is unique
 
         if (error) {
-           
+           console.log(error)
             return 'error';
         }
 console.log(data);
 
         return data; // Return the user data
     } catch (error) {
+        return 'error';
+    }
+},
+
+searchSelectedCandidat:async(numéro_national)=>{
+try {
+    const {data,error}=await supabase
+    .from('selected_candidats')
+    .select('*')
+    .eq('numéro_national',numéro_national);
+    if(!data||!data.numéro_national){
+         return 'user not found';
+    }else{
+        return data;
+    }
+} catch (error) {
+    return 'error';
+}
+},
+getAllSelectedCandidates:async()=>{
+    try {
+        const {data,error}=await supabase
+        .from('selected_candidats')
+        .select('*');
+       
+     
+        if(error){
+            console.log(error)
+            return  'error';
+        }else{
+        
+            if(data!=null){
+                return data;
+            }else{
+                return null;
+            }
+        }
+    } catch (error) {
+        console.log(error)
         return 'error';
     }
 },

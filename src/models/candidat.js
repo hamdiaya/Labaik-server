@@ -350,14 +350,12 @@ verifyResetToken: async (email, reset_token) => {
     return 'Error verifyingreset token';
   }
 },
-
-    
-updateCandidateDossierVerification : async (candidateId) => {
+ updateCandidateDossierVerification : async (candidateId,status) => {
   try {
     
     const { data, error } = await supabase
       .from('candidats_duplicate')
-      .update({ dossier_valide: true }) 
+      .update({ dossier_valide: status }) 
       .eq('id', candidateId); 
 
     if (error) {
@@ -372,11 +370,25 @@ updateCandidateDossierVerification : async (candidateId) => {
   }
 },
 
+findCandidatesByMahram: async (numéro_national) => {
+  try {
+    // Query the database to find candidates with the given mahram ID
+    const { data, error } = await supabase
+      .from('candidats_duplicate')
+      .select('*')
+      .eq('numéro_nationale_mahram',numéro_national);
 
+    if (error) {
+      return error;
+    }
 
+    return data;
+  } catch (error) {
+    console.error('Error fetching candidates by Mahram ID:', error);
+    return error;
+  }
+},
 
-
-    
 }
 
   module.exports=user;

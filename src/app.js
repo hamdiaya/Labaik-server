@@ -11,6 +11,7 @@ const registration = require('./routes/registration');
 const profile = require('./routes/profile');
 const hadjInfo=require('./routes/hadj_info');
 const tirage=require('./routes/tirage');
+const notification=require('./routes/notification');
 const app = express();
 
 // Use CORS middleware
@@ -34,7 +35,7 @@ app.use('/agentInfos', agentInfos);
 app.use('/profile', profile);
 app.use('/authCnadidat', authCandidat);
 app.use('/registration', registration);
-
+app.use('/notification',notification);
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
