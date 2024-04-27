@@ -39,7 +39,10 @@ const fileModel = {
                 console.error('Error inserting record into user_documents table:', documentError.message);
                 return { success: false, error: documentError.message };
             }
-
+            const { data: updatedUserData, error: userError } = await supabase
+            .from('candidats_duplicate')
+            .update({ documentsUploaded: true })
+            .eq('id', userId);
             console.log('File uploaded and record inserted successfully:', documentData);
             return { success: true, documentData };
         } catch (error) {

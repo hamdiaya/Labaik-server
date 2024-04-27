@@ -68,7 +68,7 @@ const tirage_controller = {
         places -= 1;
         candidats = candidats.filter((item) => item !== randomObject);
       }
-
+//national number+ last name+ first name
       const selectingData = {
         places: places,
         candidats: candidats,
