@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const user = require('../models/candidat');
 const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
+const selected_candidat = require('../models/selected_candidat');
 
 
 const profile_controller={
@@ -80,6 +81,49 @@ getMahram: async (req, res) => {
     } catch (error) {
       console.error('Error fetching candidates for mahram:', error.message);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  },
+
+  getStatus:async (req, res) => {
+    try {
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, secretKey);
+      const userId = decoded.userId;
+      
+      const userc = await user.findById(userId);
+
+      const dossier = userc.dossier_valide
+      let selectedCandidat = null;
+
+      if (dossier === true) {
+        // Check if the candidate exists in the selected table
+        const selectedCandidate = await selected_candidat.getSelectedById(userId);
+
+        if (selectedCandidate) {
+          selectedCandidat = {
+            doctor: selectedCandidate.doctor,
+            payment: selectedCandidate.payment,
+            hotel: selectedCandidate.hotel,
+            koraa: true
+          };
+        } else {
+          // Set default values if candidate not found in selected table
+          selectedCandidat = {
+            doctor: null,
+            payment: null,
+            hotel: null,
+            koraa: false
+          };
+        }
+      }
+     
+      res.status(200).json({
+        dossier,
+       selectedCandidat
+      });
+    } catch (error) {
+      console.error('Error fetching candidate info:', error.message);
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 }

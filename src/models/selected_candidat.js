@@ -21,6 +21,31 @@ console.log(data);
         return 'error';
     }
 },
+
+getSelectedById:async (selectedId)=> {
+    try {
+        const { data, error } = await supabase
+          .from('selected_candidats')
+          .select('*')
+          .eq('id', selectedId)
+          .single();
+    
+            
+          if (!data) {
+            return null;}
+       
+        if (error) {
+          return error;
+        }
+        return data;
+
+    } catch{
+        console.error('Error fetching user by ID:', error);
+        return error;
+    }
+
+
+}
 };
 
 module.exports = selected_candidat;
