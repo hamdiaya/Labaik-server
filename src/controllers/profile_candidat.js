@@ -10,7 +10,6 @@ getProfile:async (req, res) => {
         const token = req.cookies.token;
         const decoded = jwt.verify(token,secretKey);
         const userId = decoded.userId;
-
         // Fetch user profile from the database
         const userc = await user.findById(userId);
 
@@ -64,12 +63,12 @@ getMahram: async (req, res) => {
       if (userc.numéro_national) {
 
         const candidates = await user.findCandidatesByMahram(userc.numéro_national);
-
+       
         const modifiedCandidates = candidates.map(candidate => ({
-            firstName_ar: candidate.firstName_ar,
-            lastName_ar: candidate.lastName_ar,
-            numero_national: candidate.numéro_national,
-            relation_with_mahram: candidate.relation_with_mahram
+         
+          fullName: candidate.firstName_ar+" "+candidate.lastName_ar,
+          nationalNum: candidate.numéro_national,
+          relationship: candidate.relation_with_mahram
           }));
 
 

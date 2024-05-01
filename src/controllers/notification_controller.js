@@ -1,8 +1,8 @@
 const notification=require('../models/notification');
-
+const supabase = require('../config/database');
 // Function to handle sending notifications
 const notification_controller={
-    sendNotification : async (req, res) => {
+    sendNotificationToASpecificCandidate : async (req, res) => {
         try {
             // Extract sender ID, receiver ID, and content from request body
             const { sender, receiverId, content } = req.body;
@@ -24,6 +24,82 @@ const notification_controller={
             res.status(500).json({ error: 'Internal server error' });
         }
     },
+
+    sendNotificationToAllCandidates: async (req, res) => {
+        try {
+            // Extract sender ID and content from request body
+            const { sender, content } = req.body;
+    
+            const { data: candidateIds, error } = await supabase
+            .from('candidats_duplicate')
+            .select('id');
+
+       
+        if (error) {
+            console.error('Error fetching candidate IDs:', error.message);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    
+            // Send notification to each candidate
+            const notificationsSent = await Promise.all(candidateIds.map(async candidate => {
+                const receiverId = candidate.id;
+                return await notification.createNotification(sender, receiverId, content);
+            }));
+    
+            // Check if any notification failed to send
+            if (notificationsSent.some(notification => notification === 'Error creating notification:' || notification === 'error')) {
+                console.log('Error while sending notifications');
+                res.status(500).json({ error: 'Error while sending notifications' });
+            } else {
+                // Respond with success message
+                res.status(200).json('Notifications sent to all candidates');
+            }
+        } catch (error) {
+            // Handle errors
+            console.error('Error sending notifications:', error.message);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+    sendNotificationToCommuneCandidates: async (req, res) => {
+        try {
+            // Extract sender ID and content from request body
+            const { sender,content } = req.body;
+            const agentUsername = req.decoded.username;
+           
+    
+            // Fetch all candidate IDs from the 'duplicated_candidates' table belonging to the commune
+            const { data: communeCandidates, error } = await supabase
+                .from('candidats_duplicate')
+                .select('id')
+                .eq('commune_résidence', agentUsername);
+    
+            // Check for errors in fetching commune candidates
+            if (error) {
+                console.error('Error fetching commune candidates:', error.message);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+    
+            // Send notification to each commune candidate
+            const notificationsSent = await Promise.all(communeCandidates.map(async candidate => {
+                const receiverId = candidate.id;
+                return await notification.createNotification(sender, receiverId, content);
+            }));
+    
+            // Check if any notification failed to send
+            if (notificationsSent.some(notification => notification === 'Error creating notification:' || notification === 'error')) {
+                console.log('Error while sending notifications');
+                res.status(500).json({ error: 'Error while sending notifications' });
+            } else {
+                // Respond with success message
+                res.status(200).json('Notifications sent to all commune candidates');
+            }
+        } catch (error) {
+            // Handle errors
+            console.error('Error sending commune notifications:', error.message);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+    
 
     fetchNotifications : async (req, res) => {
         try {

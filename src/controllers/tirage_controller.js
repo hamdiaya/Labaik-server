@@ -94,7 +94,7 @@ const tirage_controller = {
       const { data, error } = await supabase
         .from("candidats_duplicate")
         .select(
-          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar"
+          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,sexe"
         )
         .eq("commune_résidence", agentUsername)
         .eq("dossier_valide", true);
