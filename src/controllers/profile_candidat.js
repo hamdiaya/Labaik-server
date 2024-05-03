@@ -1,28 +1,27 @@
-const jwt = require('jsonwebtoken');
-const user = require('../models/candidat');
-const secretKey='aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd';
-const selected_candidat = require('../models/selected_candidat');
+const jwt = require("jsonwebtoken");
+const user = require("../models/candidat");
+const secretKey = "aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd";
+const selected_candidat = require("../models/selected_candidat");
 
-
-const profile_controller={
-getProfile:async (req, res) => {
+const profile_controller = {
+  getProfile: async (req, res) => {
     try {
-        // Extract user details from token
-        const token = req.cookies.token;
-        const decoded = jwt.verify(token,secretKey);
-        const userId = decoded.userId;
+      // Extract user details from token
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, secretKey);
+      const userId = decoded.userId;
 
-        // Fetch user profile from the database
-        const userc = await user.findById(userId);
+      // Fetch user profile from the database
+      const userc = await user.findById(userId);
 
-        // Send profile data in the response
-        res.status(200).json(userc);
+      // Send profile data in the response
+      res.status(200).json(userc);
     } catch (error) {
-        console.error('Error fetching profile:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching profile:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
-},
-getMahram: async (req, res) => {
+  },
+  getMahram: async (req, res) => {
     try {
       const token = req.cookies.token;
       const decoded = jwt.verify(token, secretKey);
@@ -31,24 +30,21 @@ getMahram: async (req, res) => {
       const userc = await user.findById(userId);
 
       if (userc.numéro_nationale_mahram) {
-       
-        const mahram = await user.findUserByNuméroNationale(userc.numéro_nationale_mahram);
+        const mahram = await user.findUserByNuméroNationale(
+          userc.numéro_nationale_mahram
+        );
         const { firstName_ar, lastName_ar } = mahram;
 
         mahram_firstName_ar = firstName_ar;
         mahram_lastName_ar = lastName_ar;
 
-        res.status(200).json({mahram_firstName_ar,mahram_lastName_ar});
+        res.status(200).json({ mahram_firstName_ar, mahram_lastName_ar });
+      } else {
+        res.status(200).json({ message: "User does not have a mahram ID set" });
       }
-
-      else {
-        res.status(200).json({ message: 'User does not have a mahram ID set' });
-      }
-
-     
     } catch (error) {
-      console.error('Error fetching profile:', error.message);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching profile:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
 
@@ -63,48 +59,50 @@ getMahram: async (req, res) => {
       const userc = await user.findById(userId);
 
       if (userc.numéro_national) {
+        const candidates = await user.findCandidatesByMahram(
+          userc.numéro_national
+        );
 
-        const candidates = await user.findCandidatesByMahram(userc.numéro_national);
+        const modifiedCandidates = candidates.map((candidate) => ({
+          firstName_ar: candidate.firstName_ar,
+          lastName_ar: candidate.lastName_ar,
+          numero_national: candidate.numéro_national,
+          relation_with_mahram: candidate.relation_with_mahram,
+        }));
 
-        const modifiedCandidates = candidates.map(candidate => ({
-            firstName_ar: candidate.firstName_ar,
-            lastName_ar: candidate.lastName_ar,
-            numero_national: candidate.numéro_national,
-            relation_with_mahram: candidate.relation_with_mahram
-          }));
-
-
-         res.status(200).json(modifiedCandidates);
+        res.status(200).json(modifiedCandidates);
       } else {
-        res.status(200).json({ message: 'User does not have a mahram ID set' });
+        res.status(200).json({ message: "User does not have a mahram ID set" });
       }
     } catch (error) {
-      console.error('Error fetching candidates for mahram:', error.message);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching candidates for mahram:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
   },
 
-  getStatus:async (req, res) => {
+  getStatus: async (req, res) => {
     try {
       const token = req.cookies.token;
       const decoded = jwt.verify(token, secretKey);
       const userId = decoded.userId;
-      
+
       const userc = await user.findById(userId);
 
-      const dossier = userc.dossier_valide
+      const dossier = userc.dossier_valide;
       let selectedCandidat = null;
 
       if (dossier === true) {
         // Check if the candidate exists in the selected table
-        const selectedCandidate = await selected_candidat.getSelectedById(userId);
+        const selectedCandidate = await selected_candidat.getSelectedById(
+          userId
+        );
 
         if (selectedCandidate) {
           selectedCandidat = {
             doctor: selectedCandidate.doctor,
             payment: selectedCandidate.payment,
             hotel: selectedCandidate.hotel,
-            koraa: true
+            koraa: true,
           };
         } else {
           // Set default values if candidate not found in selected table
@@ -112,20 +110,20 @@ getMahram: async (req, res) => {
             doctor: null,
             payment: null,
             hotel: null,
-            koraa: false
+            koraa: false,
           };
         }
       }
-     
+
       res.status(200).json({
         dossier,
-       selectedCandidat
+        selectedCandidat,
       });
     } catch (error) {
-      console.error('Error fetching candidate info:', error.message);
-      return res.status(500).json({ error: 'Internal server error' });
+      console.error("Error fetching candidate info:", error.message);
+      return res.status(500).json({ error: "Internal server error" });
     }
-  }
-}
+  },
+};
 
 module.exports = profile_controller;

@@ -92,16 +92,16 @@ const registration_controller = {
   },
   getCitiesByWilaya: async (req, res) => {
     var { wilayaCode } = req.body;
-if(wilayaCode.length==1){
-  wilayaCode='0'+wilayaCode;
-}
-console.log(wilayaCode);
+    if (wilayaCode.length == 1) {
+      wilayaCode = "0" + wilayaCode;
+    }
+    console.log(wilayaCode);
     try {
       const { data, error } = await supabase
         .from("communes")
         .select("commune_name")
         .eq("wilaya_code", wilayaCode);
-console.log(data);
+      console.log(data);
       if (error) {
         console.error(error);
         return res.status(500).json({ message: "Internal Server Error" });
