@@ -1,4 +1,4 @@
-const { json } = require("body-parser");
+
 const supabase = require("../config/database");
 const selected_candidat = require("../models/selected_candidat");
 const PDFDocument = require("pdfkit");
@@ -6,7 +6,7 @@ const fs = require("fs");
 const tirage_controller = {
   tirage: async (req, res) => {
     try {
-      let { candidats, places } = req.body;
+      let { candidats, places, en_attente } = req.body;
 
       if (places - 2 < 0) {
         candidats = candidats.filter((item) => item.sexe !== "female");
@@ -26,9 +26,16 @@ const tirage_controller = {
           selectedCandidats.push(mahram);
         } else {
           //search the mahram in the selected list
-          mahram = selected_candidat.searchSelectedCandidat(
-            randomObject.numéro_nationale_mahram
-          );
+          if (en_attente) {
+            mahram = selected_candidat.searchPendingCandidat(
+              randomObject.numéro_nationale_mahram
+            );
+          } else {
+            mahram = selected_candidat.searchSelectedCandidat(
+              randomObject.numéro_nationale_mahram
+            );
+          }
+
           if (mahram == "user not found" || mahram == "error") {
             res.status(404).json("mahram not found for this women");
           } else {
@@ -38,28 +45,54 @@ const tirage_controller = {
         }
 
         for (const candidat of selectedCandidats) {
-          const data = await selected_candidat.addSelectedCnadidat(
-            candidat.id,
-            candidat.commune_résidence,
-            candidat.numéro_national,
-            candidat.wilaya_résidence,
-            candidat.firstName_ar,
-            candidat.lastName_ar
-          );
+          var data;
+          if (en_attente) {
+            data = await selected_candidat.addPendingCnadidat(
+              candidat.id,
+              candidat.commune_résidence,
+              candidat.numéro_national,
+              candidat.wilaya_résidence,
+              candidat.firstName_ar,
+              candidat.lastName_ar
+            );
+          } else {
+            data = await selected_candidat.addSelectedCnadidat(
+              candidat.id,
+              candidat.commune_résidence,
+              candidat.numéro_national,
+              candidat.wilaya_résidence,
+              candidat.firstName_ar,
+              candidat.lastName_ar
+            );
+          }
+
           if (data === "error") {
             throw new Error("Error saving selected candidat");
           }
         }
       } else {
         // If male selected
-        const data = await selected_candidat.addSelectedCnadidat(
-          randomObject.id,
-          randomObject.commune_résidence,
-          randomObject.numéro_national,
-          randomObject.wilaya_résidence,
-          randomObject.firstName_ar,
-          randomObject.lastName_ar
-        );
+        var data;
+        if (en_attente) {
+          data = await selected_candidat.addPendingCnadidat(
+            randomObject.id,
+            randomObject.commune_résidence,
+            randomObject.numéro_national,
+            randomObject.wilaya_résidence,
+            randomObject.firstName_ar,
+            randomObject.lastName_ar
+          );
+        } else {
+          data = await selected_candidat.addSelectedCnadidat(
+            randomObject.id,
+            randomObject.commune_résidence,
+            randomObject.numéro_national,
+            randomObject.wilaya_résidence,
+            randomObject.firstName_ar,
+            randomObject.lastName_ar
+          );
+        }
+
         if (data === "error") {
           throw new Error("Error saving selected candidat");
         }
