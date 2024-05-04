@@ -37,7 +37,7 @@ const fileController = {
 
   getDocumentsForUser: async (req, res) => {
     try {
-      const userId = req.decoded.userId;
+      const userId = req.params.id;
       console.log(userId);
       // Query the database to fetch document metadata for the specified user
       const { data: userDocuments, error } = await supabase
@@ -52,20 +52,23 @@ const fileController = {
       }
 
       // Construct URLs for downloading files from Supabase storage
-      const documentURLs = await Promise.all(
+      const data = await Promise.all(
         userDocuments.map(async (document) => {
-          console.log(document);
           const fileName = document.file_name;
           const fileType = document.document_type;
 
-          const url = supabase.storage.from("documents").getPublicUrl(fileName);
+          const url = await supabase.storage
+            .from("documents")
+            .createSignedUrl(fileName, 66666);
 
-          return url;
+          return {
+            file_type: fileType,
+            url: url.data.signedUrl,
+          };
         })
       );
-      console.log(documentURLs);
 
-      res.status(200).json(documentURLs);
+      res.status(200).json(data);
     } catch (error) {
       // Handle errors
       console.error("Error getting documents for user:", error.message);
