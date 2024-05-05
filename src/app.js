@@ -6,11 +6,14 @@ const cookieParser = require('cookie-parser');
 const authCandidat = require('./routes/auth_candidat');
 const authAdmin = require('./routes/auth_admin');
 const agentAuth = require('./routes/agent_auth');
+const docAuth = require('./routes/doc_auth');
+const doc = require('./routes/doctor');
 const agentInfos = require('./routes/agent_infos');
 const registration = require('./routes/registration');
 const profile = require('./routes/profile');
 const hadjInfo=require('./routes/hadj_info');
 const tirage=require('./routes/tirage');
+const notification=require('./routes/notification');
 const app = express();
 
 // Use CORS middleware
@@ -34,6 +37,9 @@ app.use('/agentInfos', agentInfos);
 app.use('/profile', profile);
 app.use('/authCnadidat', authCandidat);
 app.use('/registration', registration);
+app.use('/notification',notification);
+app.use('/doc_auth',docAuth);
+app.use('/doctor',doc);
 
 // Start server
 const PORT = process.env.PORT || 3000;

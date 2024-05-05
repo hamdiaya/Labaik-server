@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const agent_controller = require('../controllers/agent_auth');
-const agentVerifyToken = require('../middleware/agentTokenVerification');
+const doc_controller = require('../controllers/doc_auth');
+const docVerifyToken = require('../middleware/doctorVerifyToken');
 
 
 
-router.post('/login',  agent_controller.login);
-router.post('/logout', agentVerifyToken, agent_controller.logout);
+router.post('/login',  doc_controller.login);
+router.post('/logout', docVerifyToken, doc_controller.logout);
 
 module.exports=router;

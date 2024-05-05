@@ -48,7 +48,7 @@ const agentInfosController = {
 
     getCandidatesByCommune: async (req, res) => {
         try {
-            console.log('hhhh')
+           
             // Extract commune residence (username) of the logged-in agent
             const agentUsername = req.decoded.username;
     console.log(agentUsername);

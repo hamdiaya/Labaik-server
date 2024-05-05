@@ -6,13 +6,12 @@ const selected_candidat = require("../models/selected_candidat");
 const profile_controller = {
   getProfile: async (req, res) => {
     try {
-      // Extract user details from token
-      const token = req.cookies.token;
-      const decoded = jwt.verify(token, secretKey);
-      const userId = decoded.userId;
-
-      // Fetch user profile from the database
-      const userc = await user.findById(userId);
+        // Extract user details from token
+        const token = req.cookies.token;
+        const decoded = jwt.verify(token,secretKey);
+        const userId = decoded.userId;
+        // Fetch user profile from the database
+        const userc = await user.findById(userId);
 
       // Send profile data in the response
       res.status(200).json(userc);
@@ -63,12 +62,13 @@ const profile_controller = {
           userc.numéro_national
         );
 
-        const modifiedCandidates = candidates.map((candidate) => ({
-          firstName_ar: candidate.firstName_ar,
-          lastName_ar: candidate.lastName_ar,
-          numero_national: candidate.numéro_national,
-          relation_with_mahram: candidate.relation_with_mahram,
-        }));
+       
+        const modifiedCandidates = candidates.map(candidate => ({
+         
+          fullName: candidate.firstName_ar+" "+candidate.lastName_ar,
+          nationalNum: candidate.numéro_national,
+          relationship: candidate.relation_with_mahram
+          }));
 
         res.status(200).json(modifiedCandidates);
       } else {
