@@ -7,5 +7,7 @@ const profileController = require('../controllers/profile_candidat');
 router.get('', verifyToken, profileController.getProfile);
 router.get('/mahram', verifyToken, profileController.getMahram);
 router.get('/maharim', verifyToken, profileController.getCandidatesForMahram);
+router.get('/status', verifyToken, profileController.getStatus);
+
 
 module.exports=router;

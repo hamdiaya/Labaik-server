@@ -172,11 +172,6 @@ const user={
       }
     },
 
-
-    
-
-
-
     findById: async (userId) => {
       try {
         // Query the database to find the user by ID

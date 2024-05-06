@@ -165,7 +165,31 @@ const selected_candidat = {
     } catch (error) {
         
     }
-  }
+  },
+
+findById: async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('selected_candidats')
+        .select('*')
+        .eq('id', userId)
+        .single();
+  
+          
+        if (!data) {
+          return null;}
+     
+      if (error) {
+        return error;
+      }
+  console.log(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching user by ID:', error);
+      return error;
+    }
+  },
+
 };
 
 module.exports = selected_candidat;

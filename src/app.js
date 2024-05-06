@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const authCandidat = require('./routes/auth_candidat');
 const authAdmin = require('./routes/auth_admin');
 const agentAuth = require('./routes/agent_auth');
+const docAuth = require('./routes/doc_auth');
+const doc = require('./routes/doctor');
 const agentInfos = require('./routes/agent_infos');
 const registration = require('./routes/registration');
 const profile = require('./routes/profile');
@@ -37,6 +39,9 @@ app.use('/profile', profile);
 app.use('/authCnadidat', authCandidat);
 app.use('/registration', registration);
 app.use('/notification',notification);
+app.use('/doc_auth',docAuth);
+app.use('/doctor',doc);
+
 app.use('/payment',payment);
 // Start server
 const PORT = process.env.PORT || 3000;
