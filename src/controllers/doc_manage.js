@@ -1,6 +1,6 @@
 const supabase = require("../config/database");
 const selectedCandidats = require("../models/selected_candidat");
-
+const hadj=require("../models/candidat");
 const docManagementController = {
   getCandidatesByCommune: async (req, res) => {
     try {
@@ -46,13 +46,21 @@ const docManagementController = {
       const candidateId = req.params.id;
 
       const candidate = await selectedCandidats.findById(candidateId);
-
+       const candidat=await hadj.findById(candidateId);
+       console.log(candidat);
       if (!candidate) {
         return res.status(404).json({ error: "Candidate not found" });
       }
 
       // Send the candidate information in the response
-      res.status(200).json(candidate);
+      res.status(200).json({
+        id:candidat.id,
+        firstName:candidat.firstName_ar,
+        lastName:candidat.lastName_ar,
+        dateOfBirth:candidat.date_of_birth,
+        sexe:candidat.sexe,
+        doctor:candidate.doctor,
+      });
     } catch (error) {
       console.error("Error fetching candidate by ID:", error.message);
       res.status(500).json({ error: "Internal server error" });
