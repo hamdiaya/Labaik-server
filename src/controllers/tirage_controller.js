@@ -1,4 +1,4 @@
-const { json } = require("body-parser");
+
 const supabase = require("../config/database");
 const selected_candidat = require("../models/selected_candidat");
 const PDFDocument = require("pdfkit");
@@ -6,7 +6,7 @@ const fs = require("fs");
 const tirage_controller = {
   tirage: async (req, res) => {
     try {
-      let { candidats, places } = req.body;
+      let { candidats, places, en_attente } = req.body;
 
       if (places - 2 < 0) {
         candidats = candidats.filter((item) => item.sexe !== "female");
@@ -26,9 +26,16 @@ const tirage_controller = {
           selectedCandidats.push(mahram);
         } else {
           //search the mahram in the selected list
-          mahram = selected_candidat.searchSelectedCandidat(
-            randomObject.numéro_nationale_mahram
-          );
+          if (en_attente) {
+            mahram = selected_candidat.searchPendingCandidat(
+              randomObject.numéro_nationale_mahram
+            );
+          } else {
+            mahram = selected_candidat.searchSelectedCandidat(
+              randomObject.numéro_nationale_mahram
+            );
+          }
+
           if (mahram == "user not found" || mahram == "error") {
             res.status(404).json("mahram not found for this women");
           } else {
@@ -38,43 +45,73 @@ const tirage_controller = {
         }
 
         for (const candidat of selectedCandidats) {
-          const data = await selected_candidat.addSelectedCnadidat(
-            candidat.id,
-            candidat.commune_résidence,
-            candidat.numéro_national,
-            candidat.wilaya_résidence,
-            candidat.firstName_ar,
-            candidat.lastName_ar
-          );
+          var data;
+          if (en_attente) {
+            data = await selected_candidat.addPendingCnadidat(
+              candidat.id,
+              candidat.commune_résidence,
+              candidat.numéro_national,
+              candidat.wilaya_résidence,
+              candidat.firstName_ar,
+              candidat.lastName_ar
+            );
+          } else {
+            data = await selected_candidat.addSelectedCnadidat(
+              candidat.id,
+              candidat.commune_résidence,
+              candidat.numéro_national,
+              candidat.wilaya_résidence,
+              candidat.firstName_ar,
+              candidat.lastName_ar
+            );
+          }
+
           if (data === "error") {
             throw new Error("Error saving selected candidat");
           }
-          places -= 1;
-          candidats = candidats.filter((item) => item !== candidat);
         }
       } else {
         // If male selected
-        const data = await selected_candidat.addSelectedCnadidat(
-          randomObject.id,
-          randomObject.commune_résidence,
-          randomObject.numéro_national,
-          randomObject.wilaya_résidence,
-          randomObject.firstName_ar,
-          randomObject.lastName_ar
-        );
+        var data;
+        if (en_attente) {
+          data = await selected_candidat.addPendingCnadidat(
+            randomObject.id,
+            randomObject.commune_résidence,
+            randomObject.numéro_national,
+            randomObject.wilaya_résidence,
+            randomObject.firstName_ar,
+            randomObject.lastName_ar
+          );
+        } else {
+          data = await selected_candidat.addSelectedCnadidat(
+            randomObject.id,
+            randomObject.commune_résidence,
+            randomObject.numéro_national,
+            randomObject.wilaya_résidence,
+            randomObject.firstName_ar,
+            randomObject.lastName_ar
+          );
+        }
+
         if (data === "error") {
           throw new Error("Error saving selected candidat");
         }
-        places -= 1;
-        candidats = candidats.filter((item) => item !== randomObject);
       }
-
+      //national number+ last name+ first name
       const selectingData = {
-        places: places,
-        candidats: candidats,
-        selected1: randomObject,
+        selected1: {
+          numéro_national: randomObject.numéro_national,
+          first_name: randomObject.firstName_ar,
+          last_name: randomObject.lastName_ar,
+        },
         selected2:
-          randomObject.sexe === "female" && mahram != null ? mahram : null,
+          randomObject.sexe === "female" && mahram != null
+            ? {
+                numéro_national: mahram.numéro_national,
+                first_name: mahram.firstName_ar,
+                last_name: mahram.lastName_ar,
+              }
+            : null,
       };
 
       res.status(200).json(selectingData);
@@ -85,9 +122,16 @@ const tirage_controller = {
 
   getCandidats: async (req, res) => {
     try {
+      const agentUsername = req.decoded.username;
+      console.log(agentUsername);
       const { data, error } = await supabase
         .from("candidats_duplicate")
-        .select("*");
+        .select(
+          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,sexe"
+        )
+        .eq("commune_résidence", agentUsername)
+        .eq("dossier_valide", true);
+
       if (error) {
         throw new Error("Error fetching candidats");
       }
