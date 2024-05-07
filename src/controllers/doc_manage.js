@@ -74,7 +74,7 @@ const docManagementController = {
           fullName: candidat.firstName_ar + " " + candidat.lastName_ar,
           gender: candidat.sexe,
           dateOfBirth: candidat.date_of_birth,
-          medicalHistory: candidate.doctor,
+          medicalHistory: candidate[0].diseased,
           sickNature: medicalRecord[0].disease,
           acceptedHealthState: medicalRecord[0].passed,
           medicines: medicalRecord[0].medicines,
@@ -89,7 +89,7 @@ const docManagementController = {
 
   updateMedicalRecords: async (req, res) => {
     try {
-      const { status, disease, diseased, note, medicines } = req.body;
+      const { acceptedHealthState,sickNature,   medicalHistory, note, medicines } = req.body;
       const selectedCandidateId = req.params.id;
 
       const {
@@ -97,7 +97,7 @@ const docManagementController = {
         error: selectedCandidateUpdateError,
       } = await supabase
         .from("selected_candidats")
-        .update({ doctor: status })
+        .update({ doctor: acceptedHealthState })
         .eq("id", selectedCandidateId);
 
       if (selectedCandidateUpdateError) {
@@ -108,9 +108,9 @@ const docManagementController = {
       const { data, error } = await supabase.from("medical_records").upsert(
         [
           {
-            passed: status,
-            diseased,
-            disease,
+            passed: acceptedHealthState,
+            medicalHistory,
+            sickNature,
             medicines,
             note,
             candidate_id: selectedCandidateId,
