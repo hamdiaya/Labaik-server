@@ -76,13 +76,34 @@ findById: async (userId) => {
       if (error) {
         return error;
       }
-  console.log(data);
+  
       return data;
     } catch (error) {
       console.error('Error fetching user by ID:', error);
       return error;
     }
   },
+updateVol:async(candidat)=> {
+    try {
+      const { data, error } = await supabase
+        .from('selected_candidats')
+        .update({
+            vol: candidat.vol, 
+            flight: true 
+          }) 
+        .eq('id', candidat.id);
+  
+      if (error) {
+        throw error;
+      }
+  
+      return data;
+    } catch (error) {
+      console.error('Error updating candidat:', error);
+      throw error;
+    }
+  }
+  
 
 };
 
