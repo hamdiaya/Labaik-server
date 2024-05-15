@@ -3,12 +3,12 @@ const supabase = require("../config/database");
 
 
 const notification={
-    createNotification:async(sender, receiverId, content) =>{
+    createNotification:async(sender, receiverId, content,agentUsername) =>{
         try {
             // Insert notification into the 'notifications' table
             const { data, error } = await supabase
                 .from('notifications')
-                .insert([{ sender, receiver_id: receiverId, content}]);
+                .insert([{ sender, receiver_id: receiverId, content,agent_username:agentUsername}]);
     
             if (error ) {
                 console.log(error)
@@ -37,6 +37,43 @@ const notification={
         } catch (error) {
             console.error('Error fetching notifications:', error.message);
             return 'Error fetching notifications:';
+        }
+    },
+    fetchNotificationsOfAgent:async(username)=> {
+        try {
+            // Fetch notifications for the specified receiver ID
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .eq('agent_username', username);
+    
+            if (error) {
+                return "error";
+            }
+   
+            return data;
+        } catch (error) {
+            console.error('Error fetching notifications:', error.message);
+            return 'Error fetching notifications:';
+        }
+    },
+    makeNotificationSeen:async(notificationId)=>{
+        try {
+         
+            const {data,error}=await supabase
+            .from('notifications')
+            .update({seen:true})
+            .eq('id',notificationId);
+         
+            if(error){
+                return 'error';
+            }
+            if(data!=null){
+                return error;
+            }
+            return null;
+        } catch (error) {
+            return 'error';
         }
     }
 }

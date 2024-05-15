@@ -126,7 +126,7 @@ const selected_candidat = {
     try {
         const { data, error } = await supabase
         .from('selected_candidats')
-        .select('id,numéro_national,first_name,last_name')
+        .select('id,numéro_national,first_name,last_name,payment')
         .eq('commune', agentUsername)
         .eq('doctor', true);
 

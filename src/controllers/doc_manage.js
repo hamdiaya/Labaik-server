@@ -57,7 +57,7 @@ const docManagementController = {
       if (!candidat) {
         return res.status(404).json({ error: "Candidate not found" });
       }
-      if (!medicalRecord || !medicalRecord.id) {
+      if (!medicalRecord[0].id) {
         res.status(200).json({
           fullName: candidat.firstName_ar + " " + candidat.lastName_ar,
           gender: candidat.sexe,
@@ -74,7 +74,7 @@ const docManagementController = {
           fullName: candidat.firstName_ar + " " + candidat.lastName_ar,
           gender: candidat.sexe,
           dateOfBirth: candidat.date_of_birth,
-          medicalHistory: candidate[0].diseased,
+          medicalHistory: medicalRecord[0].diseased,
           sickNature: medicalRecord[0].disease,
           acceptedHealthState: medicalRecord[0].passed,
           medicines: medicalRecord[0].medicines,
@@ -89,7 +89,13 @@ const docManagementController = {
 
   updateMedicalRecords: async (req, res) => {
     try {
-      const { acceptedHealthState,sickNature,   medicalHistory, note, medicines } = req.body;
+      const {
+        acceptedHealthState,
+        sickNature,
+        medicalHistory,
+        note,
+        medicines,
+      } = req.body;
       const selectedCandidateId = req.params.id;
 
       const {
@@ -109,8 +115,8 @@ const docManagementController = {
         [
           {
             passed: acceptedHealthState,
-            medicalHistory,
-            sickNature,
+            diseased: medicalHistory,
+            disease: sickNature,
             medicines,
             note,
             candidate_id: selectedCandidateId,

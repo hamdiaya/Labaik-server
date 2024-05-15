@@ -14,9 +14,7 @@ const payment_controller={
         res.status(200).json(data);
        }
 
-    if (error) {
-        res.status(404).json("error fetching candidats");
-    }
+    
        } catch (error) {
         res.status(404).json("error fetching candidats");
        } 

@@ -1,128 +1,186 @@
-const notification=require('../models/notification');
-const supabase = require('../config/database');
+const notification = require("../models/notification");
+const supabase = require("../config/database");
 // Function to handle sending notifications
-const notification_controller={
-    sendNotificationToASpecificCandidate : async (req, res) => {
-        try {
-            // Extract sender ID, receiver ID, and content from request body
-            const { sender, receiverId, content } = req.body;
-    
-            // Insert notification into the 'notifications' table
-            const data= await notification.createNotification(sender,receiverId,content);
-           if(data=='Error creating notification:'||data=='error'){
-            console.log(data)
-            res.status(404).json('error while sending notification');
-           }else{
-   // Respond with success message or notification object
-           res.status(200).json('notification sent');
-           }
-    
-         
-        } catch (error) {
-            // Handle errors
-            console.error('Error sending notification:', error.message);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    },
-
-    sendNotificationToAllCandidates: async (req, res) => {
-        try {
-            // Extract sender ID and content from request body
-            const { sender, content } = req.body;
-    
-            const { data: candidateIds, error } = await supabase
-            .from('candidats_duplicate')
-            .select('id');
-
-       
-        if (error) {
-            console.error('Error fetching candidate IDs:', error.message);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
-    
-            // Send notification to each candidate
-            const notificationsSent = await Promise.all(candidateIds.map(async candidate => {
-                const receiverId = candidate.id;
-                return await notification.createNotification(sender, receiverId, content);
-            }));
-    
-            // Check if any notification failed to send
-            if (notificationsSent.some(notification => notification === 'Error creating notification:' || notification === 'error')) {
-                console.log('Error while sending notifications');
-                res.status(500).json({ error: 'Error while sending notifications' });
-            } else {
-                // Respond with success message
-                res.status(200).json('Notifications sent to all candidates');
-            }
-        } catch (error) {
-            // Handle errors
-            console.error('Error sending notifications:', error.message);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    },
-    sendNotificationToCommuneCandidates: async (req, res) => {
-        try {
-            // Extract sender ID and content from request body
-            const { sender,content } = req.body;
-            const agentUsername = req.decoded.username;
-           
-    
-            // Fetch all candidate IDs from the 'duplicated_candidates' table belonging to the commune
-            const { data: communeCandidates, error } = await supabase
-                .from('candidats_duplicate')
-                .select('id')
-                .eq('commune_résidence', agentUsername);
-    
-            // Check for errors in fetching commune candidates
-            if (error) {
-                console.error('Error fetching commune candidates:', error.message);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-    
-            // Send notification to each commune candidate
-            const notificationsSent = await Promise.all(communeCandidates.map(async candidate => {
-                const receiverId = candidate.id;
-                return await notification.createNotification(sender, receiverId, content);
-            }));
-    
-            // Check if any notification failed to send
-            if (notificationsSent.some(notification => notification === 'Error creating notification:' || notification === 'error')) {
-                console.log('Error while sending notifications');
-                res.status(500).json({ error: 'Error while sending notifications' });
-            } else {
-                // Respond with success message
-                res.status(200).json('Notifications sent to all commune candidates');
-            }
-        } catch (error) {
-            // Handle errors
-            console.error('Error sending commune notifications:', error.message);
-            res.status(500).json({ error: 'Internal server error' });
-        }
-    },
-    
-
-    fetchNotifications : async (req, res) => {
-        try {
-            // Extract receiver ID from request parameters
-            const userId = req.decoded.userId;
-    console.log(userId)
-            // Fetch notifications for the specified receiver ID
-           const notifications=await notification.fetchNotifications(userId);
-           console.log(notifications)
-       if(notifications== 'Error fetching notifications:'||notifications=='error'){
-        res.status(404).json('error while fetching notifications');
-       }
-          
-            // Respond with fetched notifications
-            res.status(200).json(notifications);
-        } catch (error) {
-            // Handle errors
-            console.error('Error fetching notifications:', error.message);
-            res.status(500).json({ error: 'Internal server error' });
-        }
+const notification_controller = {
+  sendNotificationToASpecificCandidate: async (req, res) => {
+    try {
+      // Extract sender ID, receiver ID, and content from request body
+      const { sender, receiverId, content } = req.body;
+      // Insert notification into the 'notifications' table
+      const data = await notification.createNotification(
+        sender,
+        receiverId,
+        content
+      );
+      if (data == "Error creating notification:" || data == "error") {
+        console.log(data);
+        res.status(404).json("error while sending notification");
+      } else {
+        // Respond with success message or notification object
+        res.status(200).json("notification sent");
+      }
+    } catch (error) {
+      // Handle errors
+      console.error("Error sending notification:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
-    
+  },
 
-}
+  sendNotificationToCommuneCandidates: async (req, res) => {
+    try {
+      // Extract sender ID and content from request body
+      const { sender, content } = req.body;
+      const agentUsername = req.decoded.username;
 
-module.exports=notification_controller;
+      // Fetch all candidate IDs from the 'duplicated_candidates' table belonging to the commune
+      const { data: communeCandidates, error } = await supabase
+        .from("candidats_duplicate")
+        .select("id")
+        .eq("commune_résidence", agentUsername);
+
+      // Check for errors in fetching commune candidates
+      if (error) {
+        console.error("Error fetching commune candidates:", error.message);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+
+      // Send notification to each commune candidate
+      const notificationsSent = await Promise.all(
+        communeCandidates.map(async (candidate) => {
+          const receiverId = candidate.id;
+          return await notification.createNotification(
+            sender,
+            receiverId,
+            content
+          );
+        })
+      );
+
+      // Check if any notification failed to send
+      if (
+        notificationsSent.some(
+          (notification) =>
+            notification === "Error creating notification:" ||
+            notification === "error"
+        )
+      ) {
+        console.log("Error while sending notifications");
+        res.status(500).json({ error: "Error while sending notifications" });
+      } else {
+        // Respond with success message
+        res.status(200).json("Notifications sent to all commune candidates");
+      }
+    } catch (error) {
+      // Handle errors
+      console.error("Error sending commune notifications:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  sendNotificationToAgents: async (req, res) => {
+    try {
+      // Extract sender ID and content from request body
+      const { sender, content } = req.body;
+
+      // Fetch all candidate IDs from the 'duplicated_candidates' table belonging to the commune
+      const { data: agents, error } = await supabase
+        .from("agents")
+        .select("username");
+
+      // Check for errors in fetching commune candidates
+      if (error) {
+        console.error("Error fetching commune candidates:", error.message);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+
+      // Send notification to each commune candidate
+      const notificationsSent = await Promise.all(
+        agents.map(async (agent) => {
+          const agent_username = agent.username;
+
+          return await notification.createNotification(
+            sender,
+            null,
+            content,
+            agent_username
+          );
+        })
+      );
+
+      // Check if any notification failed to send
+      if (
+        notificationsSent.some(
+          (notification) =>
+            notification === "Error creating notification:" ||
+            notification === "error"
+        )
+      ) {
+        console.log("Error while sending notifications");
+        res.status(500).json({ error: "Error while sending notifications" });
+      } else {
+        // Respond with success message
+        res.status(200).json("Notifications sent to all commune candidates");
+      }
+    } catch (error) {
+      // Handle errors
+      console.error("Error sending commune notifications:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  fetchNotifications: async (req, res) => {
+    try {
+      // Extract receiver ID from request parameters
+      const userId = req.decoded.userId;
+      // Fetch notifications for the specified receiver ID
+      const notifications = await notification.fetchNotifications(userId);
+
+      if (
+        notifications == "Error fetching notifications:" ||
+        notifications == "error"
+      ) {
+        res.status(404).json("error while fetching notifications");
+      }
+
+      // Respond with fetched notifications
+      res.status(200).json(notifications);
+    } catch (error) {
+      // Handle errors
+      console.error("Error fetching notifications:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+  fetchNotificationOfAgent: async (req, res) => {
+    try {
+      const agentUsername = req.decoded.username;
+      const notifications = await notification.fetchNotificationsOfAgent(
+        agentUsername
+      );
+
+      if (
+        notifications == "Error fetching notifications:" ||
+        notifications == "error"
+      ) {
+        res.status(404).json("error while fetching notifications");
+      }
+
+      // Respond with fetched notifications
+      res.status(200).json(notifications);
+    } catch (error) {
+      res.status(404).json("error while fetching notifications");
+    }
+  },
+  makeNotificationSeen: async (req,res) => {
+    try {
+        const {id}=req.body;
+      const data = await notification.makeNotificationSeen(id);
+      if (data == null) {
+        res.status(200).json("notification state changed ");
+      } else {
+        res.status(404).json("error changing notification state ");
+      }
+    } catch (error) {
+      res.status(404).json("error changing notification state ");
+    }
+  },
+};
+
+module.exports = notification_controller;
