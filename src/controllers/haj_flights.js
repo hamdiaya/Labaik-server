@@ -26,7 +26,7 @@ const haj_flights = {
 
           matchingVols.push(...volsForAirport);
         }
-        
+
         res.status(200).json(matchingVols);
       }
     } catch (error) {
@@ -81,10 +81,14 @@ const haj_flights = {
       const userId = req.decoded.userId;
       haaj = await selectedCandidats.findById(userId);
 
-     const vol = await flight.getVolById(haaj.vol) 
-      res.status(200).json(vol);
-      
+      if (!haaj.vol) {
+        return res
+          .status(404)
+          .json({ message: "You haven't reserved a flight yet." });
+      }
 
+      const vol = await flight.getVolById(haaj.vol);
+      res.status(200).json(vol);
     } catch (error) {
       res.status(404).json(error);
     }
