@@ -25,6 +25,33 @@ const notification_controller = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
+  sendQuestionToAgent: async (req, res) => {
+    try {
+      const sender_id = req.decoded.userId;
+      
+      const { sender, commune, content } = req.body;
+      // Insert notification into the 'notifications' table
+      const data = await notification.createNotification(
+        sender,
+        sender_id,
+        null,
+        content,
+        commune
+      );
+      if (data == "Error creating notification:" || data == "error") {
+        console.log(data);
+        res.status(404).json("error while sending notification");
+      } else {
+        // Respond with success message or notification object
+        res.status(200).json("notification sent");
+      }
+    } catch (error) {
+      // Handle errors
+      console.error("Error sending notification:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
 
   sendNotificationToCommuneCandidates: async (req, res) => {
     try {

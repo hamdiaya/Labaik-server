@@ -48,4 +48,9 @@ router.post(
 verifyAgentToken,
   notification_controller.makeNotificationSeen,
 );
+router.post(
+  "/askQuestion",
+verifyToken,
+  notification_controller.sendQuestionToAgent,
+);
 module.exports = router;

@@ -3,12 +3,12 @@ const supabase = require("../config/database");
 
 
 const notification={
-    createNotification:async(sender, receiverId, content,agentUsername) =>{
+    createNotification:async(sender,sender_id, receiverId, content,agentUsername) =>{
         try {
             // Insert notification into the 'notifications' table
             const { data, error } = await supabase
                 .from('notifications')
-                .insert([{ sender, receiver_id: receiverId, content,agent_username:agentUsername}]);
+                .insert([{ sender, receiver_id: receiverId, content,agent_username:agentUsername,sender_id:sender_id}]);
     
             if (error ) {
                 console.log(error)
