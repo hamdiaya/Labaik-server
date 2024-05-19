@@ -188,7 +188,7 @@ const user={
         if (error) {
           return error;
         }
-    console.log(data);
+   
         return data;
       } catch (error) {
         console.error('Error fetching user by ID:', error);

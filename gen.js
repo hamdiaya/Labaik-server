@@ -30,7 +30,7 @@ async function createAccountsFromCommunes() {
         const password = generateRandomString(10); // Change the length as needed
 
         // Insert account into Supabase table
-        const { data, insertError } = await supabase.from('agents').insert([{ username: communeName, password }]);
+        const { data, insertError } = await supabase.from('doctors').insert([{ commune: communeName, password }]);
         if (insertError) {
             console.error('Error adding account:', insertError.message);
         } else {

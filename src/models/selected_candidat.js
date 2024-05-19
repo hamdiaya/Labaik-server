@@ -2,6 +2,7 @@ const supabase = require("../config/database");
 const user = require("./candidat");
 
 const selected_candidat = {
+ 
   addSelectedCnadidat: async (
     id,
     commune,
@@ -45,6 +46,9 @@ const selected_candidat = {
     lastName_ar
   ) => {
     try {
+    
+
+     
       // Query the "candidats" table to find the user by username
       const { data, error } = await supabase
         .from("en_attente")
@@ -57,17 +61,18 @@ const selected_candidat = {
           last_name: lastName_ar,
         });
 
-      // Assuming the username is unique
-
+     
+  
       if (error) {
         console.log(error);
         return "error";
       }
-      console.log(data);
+
 
       return data; // Return the user data
+    
     } catch (error) {
-      return "error";
+        return 'error';
     }
   },
 
@@ -166,30 +171,50 @@ const selected_candidat = {
         
     }
   },
+  
 
-findById: async (userId) => {
+  findById: async (userId) => {
     try {
       const { data, error } = await supabase
-        .from('selected_candidats')
-        .select('*')
-        .eq('id', userId)
+        .from("selected_candidats")
+        .select("*")
+        .eq("id", userId)
         .single();
-  
-          
-        if (!data) {
-          return null;}
-     
+
+      if (!data) {
+        return null;
+      }
+
       if (error) {
         return error;
       }
-  console.log(data);
+
       return data;
     } catch (error) {
-      console.error('Error fetching user by ID:', error);
+      console.error("Error fetching user by ID:", error);
       return error;
     }
   },
+  updateVol: async (candidat) => {
+    try {
+      const { data, error } = await supabase
+        .from("selected_candidats")
+        .update({
+          vol: candidat.vol,
+          flight: true,
+        })
+        .eq("id", candidat.id);
 
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error updating candidat:", error);
+      throw error;
+    }
+  },
 };
 
 module.exports = selected_candidat;
