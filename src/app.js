@@ -16,6 +16,7 @@ const hadjInfo=require('./routes/hadj_info');
 const tirage=require('./routes/tirage');
 const notification=require('./routes/notification');
 const payment=require('./routes/payment');
+const statistics=require('./routes/statistics');
 const app = express();
 
 // Use CORS middleware
@@ -44,6 +45,7 @@ app.use('/doc_auth',docAuth);
 app.use('/doctor',doc);
 app.use('/flights',flights);
 app.use('/payment',payment);
+app.use('/statistics',statistics);
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

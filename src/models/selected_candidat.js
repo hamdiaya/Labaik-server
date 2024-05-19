@@ -215,6 +215,110 @@ const selected_candidat = {
       throw error;
     }
   },
+  getTotalNumberOfAcceptedCandidat: async () => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" }); // Use the count option to get the total number of users
+
+      if (error) {
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
+  getTotalNumberOfAcceptedCandidatOfWilaya: async (wilaya) => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" })
+        .eq('wilaya',wilaya); // Use the count option to get the total number of users
+
+      if (error) {
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
+  getTotalNumberOfAcceptedCandidatAfterMedicalVisite: async () => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" })
+        .eq("doctor",true); // Use the count option to get the total number of users
+
+      if (error) {
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
+  getTotalNumberOfAcceptedCandidatAfterMedicalVisiteOfWilaya: async (wilaya) => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" })
+        .eq("doctor",true)
+        .eq('wilaya',wilaya); // Use the count option to get the total number of users
+
+      if (error) {
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
+  getTotalNumberOfAcceptedCandidatPayé: async () => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" })
+        .eq("payment",true); // Use the count option to get the total number of users
+
+      if (error) {
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
+  getTotalNumberOfAcceptedCandidatPayéOfWilaya: async (wilaya) => {
+    try {
+     
+      const { data, error, count } = await supabase
+        .from("selected_candidats")
+        .select("*", { count: "exact" })
+        .eq("payment",true)
+        .eq('wilaya',wilaya); // Use the count option to get the total number of users
+
+      if (error) {
+        console.log(error)
+        return "error";
+      }
+   
+      return count;
+    } catch (error) {
+      return "error";
+    }
+  },
 };
 
 module.exports = selected_candidat;
