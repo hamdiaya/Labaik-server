@@ -177,7 +177,7 @@ const hadjInfo = {
       if (error) {
         return "error";
       }
-      console.log(data);
+    
       if (!data || data.length == 0) {
         return "hadj info not found";
       }

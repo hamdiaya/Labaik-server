@@ -2,16 +2,16 @@ const jwt = require("jsonwebtoken");
 const user = require("../models/candidat");
 const secretKey = "aaichraqisthebestjaaeyeuenkjdvnkjbnhhjhsdkfbkjnikqsd";
 const selected_candidat = require("../models/selected_candidat");
-
+const hadjInfo = require("../models/hadj_info");
 const profile_controller = {
   getProfile: async (req, res) => {
     try {
-        // Extract user details from token
-        const token = req.cookies.token;
-        const decoded = jwt.verify(token,secretKey);
-        const userId = decoded.userId;
-        // Fetch user profile from the database
-        const userc = await user.findById(userId);
+      // Extract user details from token
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, secretKey);
+      const userId = decoded.userId;
+      // Fetch user profile from the database
+      const userc = await user.findById(userId);
 
       // Send profile data in the response
       res.status(200).json(userc);
@@ -62,13 +62,11 @@ const profile_controller = {
           userc.numéro_national
         );
 
-       
-        const modifiedCandidates = candidates.map(candidate => ({
-         
-          fullName: candidate.firstName_ar+" "+candidate.lastName_ar,
+        const modifiedCandidates = candidates.map((candidate) => ({
+          fullName: candidate.firstName_ar + " " + candidate.lastName_ar,
           nationalNum: candidate.numéro_national,
-          relationship: candidate.relation_with_mahram
-          }));
+          relationship: candidate.relation_with_mahram,
+        }));
 
         res.status(200).json(modifiedCandidates);
       } else {
@@ -89,36 +87,55 @@ const profile_controller = {
       const userc = await user.findById(userId);
 
       const dossier = userc.dossier_valide;
-      let selectedCandidat = null;
+
+      if (dossier === false) {
+        res.status(200).json({
+          dossier: false,
+          koraa: false,
+          doctor: false,
+          payment: false,
+          hotel: false,
+        });
+      }
 
       if (dossier === true) {
-        // Check if the candidate exists in the selected table
-        const selectedCandidate = await selected_candidat.getSelectedById(
+        const selectedCandidate = await selected_candidat.findById(
           userId
         );
 
         if (selectedCandidate) {
-          selectedCandidat = {
+          res.status(200).json({
+            dossier: true,
+            koraa: true,
             doctor: selectedCandidate.doctor,
             payment: selectedCandidate.payment,
             hotel: selectedCandidate.hotel,
-            koraa: true,
-          };
+          });
         } else {
-          // Set default values if candidate not found in selected table
-          selectedCandidat = {
-            doctor: null,
-            payment: null,
-            hotel: null,
-            koraa: false,
-          };
+          const date = new Date();
+          const year = date.getFullYear();
+          const todayDateOnly = date.toISOString().split('T')[0];
+          const dateTirage= await hadjInfo.getHadjInfo(year);
+
+          if (dateTirage[0].la_date_de_tirage >= todayDateOnly) {
+            res.status(200).json({
+              dossier: true,
+              koraa: null,
+              doctor: null,
+              payment: null,
+              hotel: null,
+            });
+          } else {
+            res.status(200).json({
+              dossier: true,
+              koraa: false,
+              doctor: null,
+              payment: null,
+              hotel: null,
+            });
+          }
         }
       }
-
-      res.status(200).json({
-        dossier,
-        selectedCandidat,
-      });
     } catch (error) {
       console.error("Error fetching candidate info:", error.message);
       return res.status(500).json({ error: "Internal server error" });
