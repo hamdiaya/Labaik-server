@@ -9,8 +9,10 @@ const notification_controller = {
       // Insert notification into the 'notifications' table
       const data = await notification.createNotification(
         sender,
+        null,
         receiverId,
-        content
+        content,
+        null,
       );
       if (data == "Error creating notification:" || data == "error") {
         console.log(data);
@@ -77,8 +79,10 @@ const notification_controller = {
           const receiverId = candidate.id;
           return await notification.createNotification(
             sender,
+            null,
             receiverId,
-            content
+            content,
+            null,
           );
         })
       );
@@ -125,7 +129,8 @@ const notification_controller = {
           const agent_username = agent.username;
 
           return await notification.createNotification(
-            sender,
+           sender,
+            null,
             null,
             content,
             agent_username
