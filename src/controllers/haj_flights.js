@@ -83,7 +83,7 @@ const haj_flights = {
 
       if (!haaj.vol) {
         return res
-          .status(404)
+          .status(200)
           .json({ message: "You haven't reserved a flight yet." });
       }
 
