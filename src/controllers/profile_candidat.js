@@ -88,42 +88,23 @@ const profile_controller = {
 
       const dossier = userc.dossier_valide;
 
-      if (dossier === false) {
-        res.status(200).json({
-          dossier: false,
-          koraa: false,
-          doctor: false,
-          payment: false,
-          hotel: false,
-        });
-      }
+      if(dossier) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const hadj_info= await hadjInfo.getHadjInfo(year);
+        const dateTirage = new Date(`${hadj_info[0].la_date_de_tirage}`+"T"+`${hadj_info[0].heure_de_tirage``}`);
+        if(dateTirage < today) {
+          const selectedCandidate = await selected_candidat.findById(
+            userId
+          );
 
-      if (dossier === true) {
-        const selectedCandidate = await selected_candidat.findById(
-          userId
-        );
-
-        if (selectedCandidate) {
-          res.status(200).json({
-            dossier: true,
-            koraa: true,
-            doctor: selectedCandidate.doctor,
-            payment: selectedCandidate.payment,
-            hotel: selectedCandidate.hotel,
-          });
-        } else {
-          const date = new Date();
-          const year = date.getFullYear();
-          const todayDateOnly = date.toISOString().split('T')[0];
-          const dateTirage= await hadjInfo.getHadjInfo(year);
-
-          if (dateTirage[0].la_date_de_tirage >= todayDateOnly) {
+          if (selectedCandidate) {
             res.status(200).json({
               dossier: true,
-              koraa: null,
-              doctor: null,
-              payment: null,
-              hotel: null,
+              koraa: true,
+              doctor: selectedCandidate.doctor,
+              payment: selectedCandidate.payment,
+              hotel: selectedCandidate.hotel,
             });
           } else {
             res.status(200).json({
@@ -134,7 +115,23 @@ const profile_controller = {
               hotel: null,
             });
           }
+        } else {
+          res.status(200).json({
+            dossier: true,
+            koraa: null,
+            doctor: null,
+            payment: null,
+            hotel: null,
+          });
         }
+      } else {
+        res.status(200).json({
+          dossier: dossier,
+          koraa: null,
+          doctor: null,
+          payment: null,
+          hotel: null,
+        });
       }
     } catch (error) {
       console.error("Error fetching candidate info:", error.message);
