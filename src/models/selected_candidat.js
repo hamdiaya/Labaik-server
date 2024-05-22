@@ -115,6 +115,27 @@ const selected_candidat = {
       throw error;
     }
   },
+
+  updateHotel: async (candidat) => {
+    try {
+      const { data, error } = await supabase
+        .from("selected_candidats")
+        .update({
+          hotel_room: candidat.hotel_room,
+          hotel: true,
+        })
+        .eq("id", candidat.id);
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error updating candidat:", error);
+      throw error;
+    }
+  },
 };
 
 module.exports = selected_candidat;

@@ -15,6 +15,7 @@ const profile = require('./routes/profile');
 const hadjInfo=require('./routes/hadj_info');
 const tirage=require('./routes/tirage');
 const notification=require('./routes/notification');
+const hotels = require('./routes/hotels');
 const app = express();
 
 // Use CORS middleware
@@ -42,6 +43,7 @@ app.use('/notification',notification);
 app.use('/doc_auth',docAuth);
 app.use('/doctor',doc);
 app.use('/flights',flights);
+app.use('/hotel',hotels);
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
