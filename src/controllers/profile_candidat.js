@@ -32,12 +32,13 @@ const profile_controller = {
         const mahram = await user.findUserByNuméroNationale(
           userc.numéro_nationale_mahram
         );
-        const { firstName_ar, lastName_ar } = mahram;
+        const { relation_with_mahram } = userc;
+        const { firstName_ar, lastName_ar, numéro_national } = mahram;
 
         mahram_firstName_ar = firstName_ar;
         mahram_lastName_ar = lastName_ar;
 
-        res.status(200).json({ mahram_firstName_ar, mahram_lastName_ar });
+        res.status(200).json({ mahram_firstName_ar, mahram_lastName_ar, numéro_national, relation_with_mahram });
       } else {
         res.status(200).json({ message: "User does not have a mahram ID set" });
       }
@@ -88,15 +89,17 @@ const profile_controller = {
 
       const dossier = userc.dossier_valide;
 
-      if(dossier) {
+      if (dossier) {
         const today = new Date();
         const year = today.getFullYear();
-        const hadj_info= await hadjInfo.getHadjInfo(year);
-        const dateTirage = new Date(`${hadj_info[0].la_date_de_tirage}`+"T"+`${hadj_info[0].heure_de_tirage``}`);
-        if(dateTirage < today) {
-          const selectedCandidate = await selected_candidat.findById(
-            userId
-          );
+        const hadj_info = await hadjInfo.getHadjInfo(year);
+        const dateTirage = new Date(
+          `${hadj_info[0].la_date_de_tirage}` +
+            "T" +
+            `${hadj_info[0].heure_de_tirage}`
+        );
+        if (dateTirage < today) {
+          const selectedCandidate = await selected_candidat.findById(userId);
 
           if (selectedCandidate) {
             res.status(200).json({
@@ -104,6 +107,7 @@ const profile_controller = {
               koraa: true,
               doctor: selectedCandidate.doctor,
               payment: selectedCandidate.payment,
+              vol: selectedCandidate.flight,
               hotel: selectedCandidate.hotel,
             });
           } else {
@@ -112,6 +116,7 @@ const profile_controller = {
               koraa: false,
               doctor: null,
               payment: null,
+              vol: null,
               hotel: null,
             });
           }
@@ -121,6 +126,7 @@ const profile_controller = {
             koraa: null,
             doctor: null,
             payment: null,
+            vol: null,
             hotel: null,
           });
         }
@@ -130,6 +136,7 @@ const profile_controller = {
           koraa: null,
           doctor: null,
           payment: null,
+          vol: null,
           hotel: null,
         });
       }

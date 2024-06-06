@@ -4,65 +4,41 @@ const selected_candidat = require("../models/selected_candidat");
 const statistics_controller = {
   getStatistics: async (req, res) => {
     let wilayas = [];
-    const totalCandidats = await candidat.getTotalNumberOfCandidat();
-    if (totalCandidats == "error") {
-      res.status(404).json("error fetching statistics");
-    }
-    const totalAcceptedCandidats =
-      await selected_candidat.getTotalNumberOfAcceptedCandidat();
-    if (totalAcceptedCandidats == "error") {
-      res.status(404).json("error fetching statistics");
-    }
-    const totalAcceptedCandidatsByDoctor =
-      await selected_candidat.getTotalNumberOfAcceptedCandidatAfterMedicalVisite();
-    if (totalAcceptedCandidatsByDoctor == "error") {
-      res.status(404).json("error fetching statistics");
-    }
-    const totalAcceptedCandidatsPayé =
-      await selected_candidat.getTotalNumberOfAcceptedCandidatPayé();
-    if (totalAcceptedCandidatsPayé == "error") {
-      res.status(404).json("error fetching statistics");
-    }
+    const requests = [
+      candidat.getTotalNumberOfCandidat(),
+      selected_candidat.getTotalNumberOfAcceptedCandidat(),
+      selected_candidat.getTotalNumberOfAcceptedCandidatAfterMedicalVisite(),
+      selected_candidat.getTotalNumberOfAcceptedCandidatPayé(),
+    ];
+    const response = await Promise.all(requests);
+
+    const request2 = [];
     for (let i = 1; i <= 58; i++) {
-      var totalCandidatsOfWilaya = await candidat.getNumberOfCandidatOfWilaya(
-        i
-      );
-      if (totalCandidatsOfWilaya == "error") {
-        res.status(404).json("error fetching statistics");
-      }
-
-      var totalAcceptedCandidatsOfWilaya =
-        await selected_candidat.getTotalNumberOfAcceptedCandidatOfWilaya(i);
-      if (totalAcceptedCandidatsOfWilaya == "error") {
-        res.status(404).json("error fetching statistics");
-      }
-
-      var totalAcceptedCandidatsByDoctorOfWilaya =
-        await selected_candidat.getTotalNumberOfAcceptedCandidatAfterMedicalVisiteOfWilaya(
+      request2.push(
+        candidat.getNumberOfCandidatOfWilaya(i),
+        selected_candidat.getTotalNumberOfAcceptedCandidatOfWilaya(i),
+        selected_candidat.getTotalNumberOfAcceptedCandidatAfterMedicalVisiteOfWilaya(
           i
-        );
-      if (totalAcceptedCandidatsByDoctorOfWilaya == "error") {
-        res.status(404).json("error fetching statistics");
-      }
-      var totalAcceptedCandidatsPayéOfWilaya =
-        await selected_candidat.getTotalNumberOfAcceptedCandidatPayéOfWilaya(i);
-      if (totalAcceptedCandidatsPayéOfWilaya == "error") {
-        res.status(404).json("error fetching statistics");
-      }
+        ),
+        selected_candidat.getTotalNumberOfAcceptedCandidatPayéOfWilaya(i)
+      );
+    }
+    const response1 = await Promise.all(request2);
+    for (let i = 0; i < 232; i += 4) {
       wilayas.push({
-        wilaya: i,
-        totalCandidatsOfWilaya: totalCandidatsOfWilaya,
-        totalAcceptedCandidatsOfWilaya: totalAcceptedCandidatsOfWilaya,
-        totalAcceptedCandidatsByDoctorOfWilaya:
-          totalAcceptedCandidatsByDoctorOfWilaya,
-        totalAcceptedCandidatsPayéOfWilaya: totalAcceptedCandidatsPayéOfWilaya,
+        wilaya: Math.floor(i / 4) + 1,
+        totalCandidatsOfWilaya: response1[i + 0],
+        totalAcceptedCandidatsOfWilaya: response1[i + 1],
+        totalAcceptedCandidatsByDoctorOfWilaya: response1[i + 2],
+        totalAcceptedCandidatsPayéOfWilaya: response1[i + 3],
       });
     }
+    console.log(wilayas);
     res.status(200).json({
-      totalCandidats,
-      totalAcceptedCandidats,
-      totalAcceptedCandidatsByDoctor,
-      totalAcceptedCandidatsPayé,
+      totalCandidats: response[0],
+      totalAcceptedCandidats: response[1],
+      totalAcceptedCandidatsByDoctor: response[2],
+      totalAcceptedCandidatsPayé: response[3],
       wilayas,
     });
   },

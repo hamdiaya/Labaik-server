@@ -12,7 +12,7 @@ const notification_controller = {
         null,
         receiverId,
         content,
-        null,
+        null
       );
       if (data == "Error creating notification:" || data == "error") {
         console.log(data);
@@ -30,7 +30,7 @@ const notification_controller = {
   sendQuestionToAgent: async (req, res) => {
     try {
       const sender_id = req.decoded.userId;
-      
+
       const { sender, commune, content } = req.body;
       // Insert notification into the 'notifications' table
       const data = await notification.createNotification(
@@ -53,7 +53,6 @@ const notification_controller = {
       res.status(500).json({ error: "Internal server error" });
     }
   },
-
 
   sendNotificationToCommuneCandidates: async (req, res) => {
     try {
@@ -82,7 +81,7 @@ const notification_controller = {
             null,
             receiverId,
             content,
-            null,
+            null
           );
         })
       );
@@ -123,20 +122,22 @@ const notification_controller = {
         return res.status(500).json({ error: "Internal server error" });
       }
 
+      const { default: pLimit } = await import("p-limit");
+      const limit = pLimit(80);
       // Send notification to each commune candidate
-      const notificationsSent = await Promise.all(
-        agents.map(async (agent) => {
-          const agent_username = agent.username;
-
-          return await notification.createNotification(
-           sender,
+      const requests = agents.map((agent) =>
+        limit(() =>
+          notification.createNotification(
+            sender,
             null,
             null,
             content,
-            agent_username
-          );
-        })
+            agent.username
+          )
+        )
       );
+
+      const notificationsSent = await Promise.all(requests);
 
       // Check if any notification failed to send
       if (
@@ -183,9 +184,8 @@ const notification_controller = {
   fetchNotificationOfAgent: async (req, res) => {
     try {
       const agentUsername = req.decoded.username;
-      const notifications = await notification.fetchNotificationsOfAgent(
-        agentUsername
-      );
+      const notifications =
+        await notification.fetchNotificationsOfAgent(agentUsername);
 
       if (
         notifications == "Error fetching notifications:" ||
@@ -200,9 +200,9 @@ const notification_controller = {
       res.status(404).json("error while fetching notifications");
     }
   },
-  makeNotificationSeen: async (req,res) => {
+  makeNotificationSeen: async (req, res) => {
     try {
-        const {id}=req.body;
+      const { id } = req.body;
       const data = await notification.makeNotificationSeen(id);
       if (data == null) {
         res.status(200).json("notification state changed ");

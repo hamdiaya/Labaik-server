@@ -6,26 +6,22 @@ const hadjInfo = {
     total_places,
     la_date_de_tirage,
     heure_de_tirage,
-    algorithm,
-  
+    algorithm
   ) => {
     try {
       // Insert hadj data into the 'hadj_info' table
       const formattedDate = moment(la_date_de_tirage, "YYYY-MM-DD").format(
         "YYYY-MM-DD"
       );
-      const { data, error } = await supabase
-        .from("hadj_info")
-        .insert([
-          {
-            year: year,
-            total_places: total_places,
-            la_date_de_tirage: formattedDate,
-            heure_de_tirage: heure_de_tirage,
-            algorithm: algorithm,
-           
-          },
-        ]);
+      const { data, error } = await supabase.from("hadj_info").insert([
+        {
+          year: year,
+          total_places: total_places,
+          la_date_de_tirage: formattedDate,
+          heure_de_tirage: heure_de_tirage,
+          algorithm: algorithm,
+        },
+      ]);
 
       if (error) {
         return error;
@@ -78,34 +74,65 @@ const hadjInfo = {
   },
   // Replace with your Supabase URL
 
-  updatePlacesDisponiblesOfCommune: async (nombre_des_habitants,places) => {
+  updatePlacesDisponiblesOfCommune: async (nombre_des_habitants, places) => {
     try {
       // Retrieve formula for the specified year
       // Fetch communes data
       const { data: communesData, error: communesError } = await supabase
         .from("communes")
-        .select("*");
+        .select("*")
+        .order("nombre_des_habitants", { ascending: false });
 
       if (communesError) {
         console.error("Error fetching communes data:", communesError);
         return "Error fetching communes data:";
       }
 
+      const { default: pLimit } = await import("p-limit");
+      const limit = pLimit(80);
+
       // Calculate updated values
       if (communesData) {
         // Iterate over each row in the result set
-        communesData.forEach(async (row) => {
-         var nombre_des_places_dispo=Math.floor((row.nombre_des_habitants*places)/nombre_des_habitants);
-          const { data2, error } = await supabase
-            .from("communes")
-            .update({
-              nombre_des_places_dispo: nombre_des_places_dispo,
-            })
-            .eq("id", row.id);
-          if (error) {
-            return "error";
-          }
+        let x = 0;
+        const a = [];
+        communesData.map((c) => {
+          var nombre_des_places_dispo = Math.floor(
+            (c.nombre_des_habitants * places) / nombre_des_habitants
+          );
+          x += nombre_des_places_dispo;
+          return a.push(nombre_des_places_dispo);
         });
+        let d = places - x;
+        console.log("nombre_des_habitants :", nombre_des_habitants);
+        console.log("places :", places);
+        console.log("d :", d);
+        console.log("a :", a);
+        console.log("x :", x);
+        const n = [];
+        for (i = 0; i < 1541; i++) {
+          if (d > 0) {
+            n.push(a[i] + 1);
+            d--;
+          } else {
+            n.push(a[i]);
+          }
+        }
+        const requests = n.map((e, i) =>
+          limit(() =>
+            supabase
+              .from("communes")
+              .update({
+                nombre_des_places_dispo: e,
+              })
+              .eq("id", communesData[i].id)
+          )
+        );
+        console.log("n :", n);
+        const response = await Promise.all(requests);
+        if (response.some((r) => r.error !== null)) {
+          return "error";
+        }
         return "Places disponibles updated successfully for year:";
       }
     } catch (error) {
@@ -124,27 +151,23 @@ const hadjInfo = {
         const { data: wilayaData, error: wilayaError } = await supabase
           .from("wilayas")
           .select("*");
-          console.log(wilayaData);
         if (wilayaError) {
           return "error fetchings wilayas data";
         }
         if (wilayaData) {
-          wilayaData.forEach(async (row) => {
-            let places = 0;
-            communesData.forEach(async (c) => {
-              if (c.wilaya_code == row.wilaya_code) {
-                places = places + c.nombre_des_places_dispo;
-              }
-            });
-            const { data: updatedWilayasData, error: updatedWilayasError } =
-              await supabase
-                .from("wilayas")
-                .update({ nombre_des_places_dispo: places })
-                .eq("wilaya_code", row.wilaya_code);
-            if (updatedWilayasError) {
-              return "error updating places in wilaya";
-            }
+          const requests = wilayaData.map((w) => {
+            let places = communesData.reduce((t, c) => {
+              return c.wilaya_code === w.wilaya_code
+                ? (t += c.nombre_des_places_dispo)
+                : t;
+            }, 0);
+            return supabase
+              .from("wilayas")
+              .update({ nombre_des_places_dispo: places })
+              .eq("wilaya_code", w.wilaya_code);
           });
+
+          const response = await Promise.all(requests);
           return "wilayas places updated";
         }
       }
@@ -177,7 +200,7 @@ const hadjInfo = {
       if (error) {
         return "error";
       }
-    
+
       if (!data || data.length == 0) {
         return "hadj info not found";
       }
@@ -192,7 +215,7 @@ const hadjInfo = {
     const { data, error } = await supabase
       .from("wilayas")
       .select("nombre_des_habitants");
-      
+
     if (error) {
       console.log(error);
       return "Error fetching total habitants:";
@@ -211,7 +234,6 @@ const hadjInfo = {
       });
       return totalHabitants;
     }
-    
   },
 };
 
