@@ -1,4 +1,3 @@
-
 const supabase = require("../config/database");
 const selected_candidat = require("../models/selected_candidat");
 const PDFDocument = require("pdfkit");
@@ -6,35 +5,30 @@ const fs = require("fs");
 const tirage_controller = {
   tirage: async (req, res) => {
     try {
-      let { candidats, places, en_attente } = req.body;
+      let { candidats, places } = req.body;
 
-      if (places - 2 < 0) {
+      if (places < 2) {
         candidats = candidats.filter((item) => item.sexe !== "female");
       }
 
       const randomIndex = Math.floor(Math.random() * candidats.length);
       const randomObject = candidats[randomIndex];
+      const selectedCandidats = [randomObject];
+      candidats.splice(randomIndex, 1);
 
       if (randomObject.sexe === "female") {
         // If female selected
-        const selectedCandidats = [randomObject];
         var mahram = candidats.find(
           (item) =>
-            item.numéro_nationale === randomObject.numéro_nationale_mahram
+            item.numéro_national === randomObject.numéro_nationale_mahram
         );
         if (mahram) {
           selectedCandidats.push(mahram);
         } else {
           //search the mahram in the selected list
-          if (en_attente) {
-            mahram = selected_candidat.searchPendingCandidat(
-              randomObject.numéro_nationale_mahram
-            );
-          } else {
-            mahram = selected_candidat.searchSelectedCandidat(
-              randomObject.numéro_nationale_mahram
-            );
-          }
+          mahram = selected_candidat.searchSelectedCandidat(
+            randomObject.numéro_nationale_mahram
+          );
 
           if (mahram == "user not found" || mahram == "error") {
             res.status(404).json("mahram not found for this women");
@@ -45,26 +39,14 @@ const tirage_controller = {
         }
 
         for (const candidat of selectedCandidats) {
-          var data;
-          if (en_attente) {
-            data = await selected_candidat.addPendingCnadidat(
-              candidat.id,
-              candidat.commune_résidence,
-              candidat.numéro_national,
-              candidat.wilaya_résidence,
-              candidat.firstName_ar,
-              candidat.lastName_ar
-            );
-          } else {
-            data = await selected_candidat.addSelectedCnadidat(
-              candidat.id,
-              candidat.commune_résidence,
-              candidat.numéro_national,
-              candidat.wilaya_résidence,
-              candidat.firstName_ar,
-              candidat.lastName_ar
-            );
-          }
+          const data = await selected_candidat.addSelectedCnadidat(
+            candidat.id,
+            candidat.commune_résidence,
+            candidat.numéro_national,
+            candidat.wilaya_résidence,
+            candidat.firstName_ar,
+            candidat.lastName_ar
+          );
 
           if (data === "error") {
             throw new Error("Error saving selected candidat");
@@ -72,26 +54,14 @@ const tirage_controller = {
         }
       } else {
         // If male selected
-        var data;
-        if (en_attente) {
-          data = await selected_candidat.addPendingCnadidat(
-            randomObject.id,
-            randomObject.commune_résidence,
-            randomObject.numéro_national,
-            randomObject.wilaya_résidence,
-            randomObject.firstName_ar,
-            randomObject.lastName_ar
-          );
-        } else {
-          data = await selected_candidat.addSelectedCnadidat(
-            randomObject.id,
-            randomObject.commune_résidence,
-            randomObject.numéro_national,
-            randomObject.wilaya_résidence,
-            randomObject.firstName_ar,
-            randomObject.lastName_ar
-          );
-        }
+        const data = await selected_candidat.addSelectedCnadidat(
+          randomObject.id,
+          randomObject.commune_résidence,
+          randomObject.numéro_national,
+          randomObject.wilaya_résidence,
+          randomObject.firstName_ar,
+          randomObject.lastName_ar
+        );
 
         if (data === "error") {
           throw new Error("Error saving selected candidat");
@@ -127,7 +97,7 @@ const tirage_controller = {
       const { data, error } = await supabase
         .from("candidats_duplicate")
         .select(
-          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,sexe"
+          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,numéro_nationale_mahram,sexe"
         )
         .eq("commune_résidence", agentUsername)
         .eq("dossier_valide", true);

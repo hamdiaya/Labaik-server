@@ -38,7 +38,12 @@ const profile_controller = {
         mahram_firstName_ar = firstName_ar;
         mahram_lastName_ar = lastName_ar;
 
-        res.status(200).json({ mahram_firstName_ar, mahram_lastName_ar, numéro_national, relation_with_mahram });
+        res.status(200).json({
+          mahram_firstName_ar,
+          mahram_lastName_ar,
+          numéro_national,
+          relation_with_mahram,
+        });
       } else {
         res.status(200).json({ message: "User does not have a mahram ID set" });
       }
@@ -91,6 +96,7 @@ const profile_controller = {
 
       if (dossier) {
         const today = new Date();
+        const dueDate = new Date(today).setDate(today.getDate + 1);
         const year = today.getFullYear();
         const hadj_info = await hadjInfo.getHadjInfo(year);
         const dateTirage = new Date(
@@ -98,6 +104,7 @@ const profile_controller = {
             "T" +
             `${hadj_info[0].heure_de_tirage}`
         );
+        console.log(dateTirage);
         if (dateTirage < today) {
           const selectedCandidate = await selected_candidat.findById(userId);
 
@@ -111,14 +118,25 @@ const profile_controller = {
               hotel: selectedCandidate.hotel,
             });
           } else {
-            res.status(200).json({
-              dossier: true,
-              koraa: false,
-              doctor: null,
-              payment: null,
-              vol: null,
-              hotel: null,
-            });
+            if (dateTirage < dueDate) {
+              res.status(200).json({
+                dossier: true,
+                koraa: false,
+                doctor: null,
+                payment: null,
+                vol: null,
+                hotel: null,
+              });
+            } else {
+              res.status(200).json({
+                dossier: true,
+                koraa: null,
+                doctor: null,
+                payment: null,
+                vol: null,
+                hotel: null,
+              });
+            }
           }
         } else {
           res.status(200).json({

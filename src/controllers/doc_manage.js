@@ -42,14 +42,12 @@ const docManagementController = {
   getCandidateById: async (req, res) => {
     try {
       const candidateId = req.params.id;
-
       const candidate = await selectedCandidats.findById(candidateId);
       const candidat = await hadj.findById(candidateId);
       const { data: medicalRecord, error } = await supabase
         .from("medical_records")
         .select("*")
         .eq("candidate_id", candidateId);
-      console.log(medicalRecord);
 
       if (!candidate) {
         return res.status(404).json({ error: "Candidate not found" });
@@ -57,7 +55,8 @@ const docManagementController = {
       if (!candidat) {
         return res.status(404).json({ error: "Candidate not found" });
       }
-      if (!medicalRecord[0].id) {
+
+      if (medicalRecord.length == 0) {
         res.status(200).json({
           fullName: candidat.firstName_ar + " " + candidat.lastName_ar,
           gender: candidat.sexe,
