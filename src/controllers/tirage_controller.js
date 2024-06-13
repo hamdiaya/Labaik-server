@@ -6,19 +6,30 @@ const tirage_controller = {
   tirage: async (req, res) => {
     try {
       let { candidats, places } = req.body;
-
+      let duplicatedCandidats = [];
+      candidats.map((candidat) => {
+        for (let i = 0; i < candidat.ancienté; i++) {
+          duplicatedCandidats.push(candidat);
+        }
+      });
       if (places < 2) {
-        candidats = candidats.filter((item) => item.sexe !== "female");
+        duplicatedCandidats = duplicatedCandidats.filter(
+          (item) => item.sexe !== "female"
+        );
       }
 
-      const randomIndex = Math.floor(Math.random() * candidats.length);
-      const randomObject = candidats[randomIndex];
+      const randomIndex = Math.floor(
+        Math.random() * duplicatedCandidats.length
+      );
+      const randomObject = duplicatedCandidats[randomIndex];
       const selectedCandidats = [randomObject];
-      candidats.splice(randomIndex, 1);
+      duplicatedCandidats = duplicatedCandidats.filter(
+        (item) => item.numéro_national !== randomObject.numéro_national
+      );
 
       if (randomObject.sexe === "female") {
         // If female selected
-        var mahram = candidats.find(
+        var mahram = duplicatedCandidats.find(
           (item) =>
             item.numéro_national === randomObject.numéro_nationale_mahram
         );
@@ -97,13 +108,13 @@ const tirage_controller = {
       const { data, error } = await supabase
         .from("candidats_duplicate")
         .select(
-          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,numéro_nationale_mahram,sexe"
+          "id, commune_résidence,numéro_national,wilaya_résidence,firstName_ar,lastName_ar,numéro_nationale_mahram,sexe,ancienté"
         )
         .eq("commune_résidence", agentUsername)
         .eq("dossier_valide", true);
 
       if (error) {
-        throw new Error("Error fetching candidats");
+        throw new Error("Error fetching Candidats");
       }
       res.status(200).json(data);
     } catch (error) {
